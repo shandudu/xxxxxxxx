@@ -5,7 +5,7 @@ description = "Inspection plans, preventive maintenance, repair orders and downt
 author = "fba"
 tags = ["task", "other"]
 database = ["mysql", "postgresql"]
-depends_on = ["equipment", "routing", "production"]
+depends_on = ["equipment", "routing", "production", "inventory", "material", "warehouse", "trace"]
 
 [app]
 extend = "admin"

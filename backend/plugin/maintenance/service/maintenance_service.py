@@ -33,6 +33,8 @@ from backend.plugin.maintenance.model import (
     MaintenancePlan,
     MaintenanceTask,
     RepairOrder,
+    RepairPartIssue,
+    RepairCostPosting,
 )
 from backend.plugin.maintenance.schema.maintenance import (
     AssignRepair,
@@ -48,12 +50,22 @@ from backend.plugin.maintenance.schema.maintenance import (
     MaintenancePlanDetail,
     MaintenanceTaskDetail,
     RepairOrderDetail,
+    IssueRepairPart,
+    RepairPartIssueDetail,
+    PostRepairCost,
+    RepairCostPostingDetail,
+    RepairCostAnalysisRow,
+    RepairCostAnalysisSummary,
     StartRepair,
     StartTask,
     UpdateMaintenancePlan,
 )
 from backend.plugin.routing.enums import WorkCenterStatus
 from backend.plugin.routing.model import WorkCenter
+from backend.plugin.inventory.enums import StockTransactionType
+from backend.plugin.inventory.service import inventory_service
+from backend.plugin.finance.enums import FinancePeriodStatus, VoucherStatus
+from backend.plugin.finance.model import FinancePeriod, GLVoucher, GLVoucherLine
 from backend.utils.timezone import timezone
 
 
@@ -577,6 +589,92 @@ class MaintenanceService:
         await MaintenanceService._restore_equipment_status(db, equipment)
         await db.flush()
         return await MaintenanceService._repair_detail(db, row)
+
+    @staticmethod
+    async def list_repair_parts(db: AsyncSession, repair_id: int) -> list[RepairPartIssueDetail]:
+        await MaintenanceService._repair(db, repair_id)
+        rows = (await db.scalars(select(RepairPartIssue).where(RepairPartIssue.repair_id == repair_id, RepairPartIssue.deleted == 0).order_by(RepairPartIssue.id))).all()
+        return [RepairPartIssueDetail.model_validate(row) for row in rows]
+
+    @staticmethod
+    async def issue_repair_part(db: AsyncSession, repair_id: int, obj: IssueRepairPart) -> RepairPartIssueDetail:
+        repair = await MaintenanceService._repair(db, repair_id, lock=True)
+        if repair.status not in (RepairStatus.IN_REPAIR, RepairStatus.COMPLETED):
+            raise errors.ConflictError(msg='REPAIR_ORDER_NOT_ISSUEABLE')
+        existing = await db.scalar(select(RepairPartIssue).where(RepairPartIssue.idempotency_key == obj.idempotency_key, RepairPartIssue.deleted == 0))
+        if existing:
+            return RepairPartIssueDetail.model_validate(existing)
+        issued_at = obj.issued_at or timezone.now()
+        issue = RepairPartIssue(
+            repair_id=repair.id, material_id=obj.material_id, lot_id=obj.lot_id,
+            warehouse_id=obj.warehouse_id, location_id=obj.location_id, quantity=obj.quantity,
+            unit_cost=obj.unit_cost, total_cost=(obj.quantity * obj.unit_cost).quantize(Decimal('0.000001')),
+            idempotency_key=obj.idempotency_key, issued_at=issued_at, remark=obj.remark,
+        )
+        db.add(issue)
+        await db.flush()
+        transaction = await inventory_service.post_transaction(
+            db, idempotency_key=f'REPAIR_PART:{obj.idempotency_key}', transaction_type=StockTransactionType.ISSUE,
+            material_id=obj.material_id, lot_id=obj.lot_id, warehouse_id=obj.warehouse_id,
+            location_id=obj.location_id, quantity_delta=-obj.quantity, reference_type='REPAIR_ORDER',
+            reference_id=repair.id, reference_no=repair.repair_no, remark=obj.remark,
+            operator_id=MaintenanceService._operator_id(),
+        )
+        issue.stock_transaction_id = transaction.id
+        await db.flush()
+        return RepairPartIssueDetail.model_validate(issue)
+
+    @staticmethod
+    async def post_repair_cost(db: AsyncSession, repair_id: int, obj: PostRepairCost) -> RepairCostPostingDetail:
+        repair = await MaintenanceService._repair(db, repair_id, lock=True)
+        if repair.status != RepairStatus.COMPLETED:
+            raise errors.ConflictError(msg='REPAIR_ORDER_NOT_COST_POSTABLE')
+        existing = await db.scalar(select(RepairCostPosting).where(RepairCostPosting.repair_id == repair_id, RepairCostPosting.deleted == 0))
+        if existing:
+            return RepairCostPostingDetail.model_validate(existing)
+        period = await db.scalar(select(FinancePeriod).where(FinancePeriod.id == obj.period_id, FinancePeriod.deleted == 0))
+        if not period:
+            raise errors.NotFoundError(msg='FINANCE_PERIOD_NOT_FOUND')
+        if period.status != FinancePeriodStatus.OPEN:
+            raise errors.ConflictError(msg='FINANCE_PERIOD_CLOSED')
+        parts_cost = Decimal(await db.scalar(select(func.coalesce(func.sum(RepairPartIssue.total_cost), 0)).where(RepairPartIssue.repair_id == repair_id, RepairPartIssue.deleted == 0)) or 0)
+        total = (parts_cost + obj.labor_cost).quantize(Decimal('0.000001'))
+        if total <= 0:
+            raise errors.RequestError(msg='REPAIR_COST_MUST_BE_POSITIVE')
+        now = timezone.now()
+        posting = RepairCostPosting(repair_id=repair_id, period_id=obj.period_id, parts_cost=parts_cost, labor_cost=obj.labor_cost, total_cost=total, posted_at=now, remark=obj.remark)
+        db.add(posting)
+        await db.flush()
+        voucher = GLVoucher(voucher_no=f'V-REPAIR-{now:%Y%m%d%H%M%S}-{uuid4().hex[:6].upper()}', period_id=obj.period_id, voucher_date=now.date(), source_type='REPAIR_COST', source_id=posting.id, summary=f'维修费用 {repair.repair_no}', total_debit=total, total_credit=total, status=VoucherStatus.POSTED, posted_at=now)
+        db.add(voucher)
+        await db.flush()
+        db.add_all([
+            GLVoucherLine(voucher_id=voucher.id, line_no=1, account_code='6602', account_name='维修费用', debit=total, credit=Decimal('0'), description=repair.repair_no),
+            GLVoucherLine(voucher_id=voucher.id, line_no=2, account_code='2202', account_name='应付账款', debit=Decimal('0'), credit=total, description=repair.repair_no),
+        ])
+        posting.voucher_id = voucher.id
+        repair.repair_cost = total
+        await db.flush()
+        return RepairCostPostingDetail.model_validate(posting)
+
+    @staticmethod
+    async def repair_cost_analysis(db: AsyncSession, period_id: int | None = None, hourly_downtime_cost: Decimal = Decimal('0')) -> RepairCostAnalysisSummary:
+        query = select(RepairCostPosting, RepairOrder, Equipment).join(RepairOrder, RepairOrder.id == RepairCostPosting.repair_id).join(Equipment, Equipment.id == RepairOrder.equipment_id).where(RepairCostPosting.deleted == 0, RepairOrder.deleted == 0)
+        if period_id is not None:
+            query = query.where(RepairCostPosting.period_id == period_id)
+        rows = (await db.execute(query.order_by(RepairCostPosting.posted_at.desc()))).all()
+        result_rows: list[RepairCostAnalysisRow] = []
+        total_parts = total_labor = total_repair = total_minutes = total_downtime_cost = Decimal('0')
+        for posting, repair, equipment in rows:
+            minutes = Decimal('0')
+            if repair.downtime_id:
+                downtime = await db.scalar(select(EquipmentDowntime).where(EquipmentDowntime.id == repair.downtime_id, EquipmentDowntime.deleted == 0))
+                if downtime:
+                    minutes = downtime.duration_minutes or duration_minutes(downtime.start_at, timezone.now())
+            downtime_cost = (minutes / Decimal('60') * hourly_downtime_cost).quantize(Decimal('0.000001'))
+            result_rows.append(RepairCostAnalysisRow(repair_id=repair.id, repair_no=repair.repair_no, equipment_id=equipment.id, equipment_code=equipment.equipment_code, equipment_name=equipment.equipment_name, repair_status=repair.status, parts_cost=posting.parts_cost, labor_cost=posting.labor_cost, total_cost=posting.total_cost, downtime_minutes=minutes, downtime_cost=downtime_cost))
+            total_parts += posting.parts_cost; total_labor += posting.labor_cost; total_repair += posting.total_cost; total_minutes += minutes; total_downtime_cost += downtime_cost
+        return RepairCostAnalysisSummary(period_id=period_id, hourly_downtime_cost=hourly_downtime_cost, repair_count=len(result_rows), downtime_minutes=total_minutes, downtime_cost=total_downtime_cost, total_parts_cost=total_parts, total_labor_cost=total_labor, total_repair_cost=total_repair, rows=result_rows)
 
     @staticmethod
     async def cancel_repair(db: AsyncSession, repair_id: int) -> RepairOrderDetail:

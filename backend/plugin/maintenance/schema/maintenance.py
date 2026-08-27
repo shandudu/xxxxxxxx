@@ -279,6 +279,97 @@ class RepairOrderDetail(SchemaBase):
     created_time: datetime
 
 
+class IssueRepairPart(SchemaBase):
+    material_id: int = Field(ge=1)
+    lot_id: int | None = Field(default=None, ge=1)
+    warehouse_id: int = Field(ge=1)
+    location_id: int = Field(ge=1)
+    quantity: Decimal = Field(gt=0, max_digits=18, decimal_places=6)
+    unit_cost: Decimal = Field(default=Decimal('0'), ge=0, max_digits=18, decimal_places=6)
+    idempotency_key: str = Field(min_length=8, max_length=180)
+    issued_at: datetime | None = None
+    remark: str | None = Field(default=None, max_length=2000)
+
+    @field_validator('issued_at', mode='after')
+    @classmethod
+    def normalize_issue_time(cls, value: datetime | None) -> datetime | None:
+        return aware(value)
+
+    @field_validator('remark', mode='before')
+    @classmethod
+    def normalize_issue_remark(cls, value: Any) -> str | None:
+        return optional_text(value)
+
+
+class RepairPartIssueDetail(SchemaBase):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    repair_id: int
+    material_id: int
+    lot_id: int | None = None
+    warehouse_id: int
+    location_id: int
+    quantity: Decimal
+    unit_cost: Decimal
+    total_cost: Decimal
+    idempotency_key: str
+    stock_transaction_id: int | None = None
+    issued_at: datetime
+    remark: str | None = None
+
+
+class PostRepairCost(SchemaBase):
+    period_id: int = Field(ge=1)
+    labor_cost: Decimal = Field(default=Decimal('0'), ge=0, max_digits=18, decimal_places=6)
+    remark: str | None = Field(default=None, max_length=2000)
+
+    @field_validator('remark', mode='before')
+    @classmethod
+    def normalize_posting_remark(cls, value: Any) -> str | None:
+        return optional_text(value)
+
+
+class RepairCostPostingDetail(SchemaBase):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    repair_id: int
+    period_id: int
+    parts_cost: Decimal
+    labor_cost: Decimal
+    total_cost: Decimal
+    voucher_id: int | None = None
+    posted_at: datetime
+    remark: str | None = None
+
+
+class RepairCostAnalysisRow(SchemaBase):
+    repair_id: int
+    repair_no: str
+    equipment_id: int
+    equipment_code: str = ''
+    equipment_name: str = ''
+    repair_status: RepairStatus
+    parts_cost: Decimal
+    labor_cost: Decimal
+    total_cost: Decimal
+    downtime_minutes: Decimal
+    downtime_cost: Decimal
+
+
+class RepairCostAnalysisSummary(SchemaBase):
+    period_id: int | None = None
+    hourly_downtime_cost: Decimal
+    repair_count: int
+    downtime_minutes: Decimal
+    downtime_cost: Decimal
+    total_parts_cost: Decimal
+    total_labor_cost: Decimal
+    total_repair_cost: Decimal
+    rows: list[RepairCostAnalysisRow] = Field(default_factory=list)
+
+
 class CreateDowntime(SchemaBase):
     downtime_no: str | None = Field(default=None, max_length=100, pattern=CODE_PATTERN)
     equipment_id: int = Field(ge=1)

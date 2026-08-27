@@ -3,6 +3,8 @@ from backend.plugin.maintenance.model.maintenance import (
     MaintenancePlan,
     MaintenanceTask,
     RepairOrder,
+    RepairPartIssue,
+    RepairCostPosting,
 )
 
-__all__ = ['EquipmentDowntime', 'MaintenancePlan', 'MaintenanceTask', 'RepairOrder']
+__all__ = ['EquipmentDowntime', 'MaintenancePlan', 'MaintenanceTask', 'RepairOrder', 'RepairPartIssue', 'RepairCostPosting']

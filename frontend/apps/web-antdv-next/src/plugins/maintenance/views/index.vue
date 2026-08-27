@@ -6,6 +6,7 @@ import type {
   MaintenancePlan,
   MaintenanceTask,
   RepairOrder,
+  RepairCostAnalysisSummary,
   UserOption,
   WorkCenterOption,
 } from '../api';
@@ -33,6 +34,9 @@ import {
   getMaintenanceUserOptionsApi,
   getMaintenanceWorkCenterOptionsApi,
   getRepairOrdersApi,
+  issueRepairPartApi,
+  postRepairCostApi,
+  getRepairCostAnalysisApi,
   startMaintenanceTaskApi,
   startRepairOrderApi,
   updateMaintenancePlanApi,
@@ -45,6 +49,8 @@ type DialogKind =
   | 'completeTask'
   | 'downtime'
   | 'generate'
+  | 'issuePart'
+  | 'postCost'
   | 'plan'
   | 'repair';
 
@@ -81,6 +87,8 @@ const selectedDowntime = ref<EquipmentDowntime>();
 const taskStatusFilter = ref<string>();
 const repairStatusFilter = ref<string>();
 const downtimeStatusFilter = ref<string>();
+const downtimeHourlyCost = ref(0);
+const costAnalysis = ref<RepairCostAnalysisSummary>({ hourly_downtime_cost: 0, repair_count: 0, downtime_minutes: 0, downtime_cost: 0, total_parts_cost: 0, total_labor_cost: 0, total_repair_cost: 0, rows: [] });
 
 const filteredTasks = computed(() =>
   taskStatusFilter.value
@@ -107,6 +115,8 @@ const dialogTitle = computed(() => ({
   generate: '生成到期运维任务',
   plan: editingPlan.value ? '编辑运维计划' : '新建运维计划',
   repair: '设备故障报修',
+  issuePart: '登记备件领用',
+  postCost: '维修费用入账',
 }[dialogKind.value]));
 
 const statusText: Record<string, string> = {
@@ -178,6 +188,10 @@ async function loadAll() {
   } finally {
     loading.value = false;
   }
+}
+
+async function loadCostAnalysis() {
+  costAnalysis.value = await getRepairCostAnalysisApi({ hourly_downtime_cost: Number(downtimeHourlyCost.value) });
 }
 
 function openPlan(record?: MaintenancePlan) {
@@ -263,6 +277,20 @@ function openCompleteRepair(record: RepairOrder) {
   dialogVisible.value = true;
 }
 
+function openIssuePart(record: RepairOrder) {
+  dialogKind.value = 'issuePart';
+  selectedRepair.value = record;
+  form.value = { quantity: 1, unit_cost: 0, idempotency_key: `repair-part-${record.id}-${Date.now()}` };
+  dialogVisible.value = true;
+}
+
+function openPostCost(record: RepairOrder) {
+  dialogKind.value = 'postCost';
+  selectedRepair.value = record;
+  form.value = { period_id: undefined, labor_cost: 0 };
+  dialogVisible.value = true;
+}
+
 function openDowntime() {
   dialogKind.value = 'downtime';
   selectedDowntime.value = undefined;
@@ -295,6 +323,8 @@ async function submit() {
   if (dialogKind.value === 'repair' && !requireFields(['equipment_id', 'fault_description'])) return;
   if (dialogKind.value === 'assignRepair' && !requireFields(['assigned_user_id'])) return;
   if (dialogKind.value === 'completeRepair' && !requireFields(['root_cause', 'repair_action'])) return;
+  if (dialogKind.value === 'issuePart' && !requireFields(['material_id', 'warehouse_id', 'location_id', 'quantity', 'idempotency_key'])) return;
+  if (dialogKind.value === 'postCost' && !requireFields(['period_id'])) return;
   if (dialogKind.value === 'downtime' && !requireFields(['equipment_id', 'category', 'start_at'])) return;
   if (dialogKind.value === 'closeDowntime' && !requireFields(['end_at'])) return;
 
@@ -321,6 +351,12 @@ async function submit() {
     } else if (dialogKind.value === 'completeRepair' && selectedRepair.value) {
       await completeRepairOrderApi(selectedRepair.value.id, form.value);
       message.success('维修已完成，关联停机已关闭');
+    } else if (dialogKind.value === 'issuePart' && selectedRepair.value) {
+      await issueRepairPartApi(selectedRepair.value.id, form.value);
+      message.success('备件已领用并扣减库存');
+    } else if (dialogKind.value === 'postCost' && selectedRepair.value) {
+      await postRepairCostApi(selectedRepair.value.id, form.value);
+      message.success('维修费用已入账并生成总账凭证');
     } else if (dialogKind.value === 'downtime') {
       const data = { ...form.value };
       if (!data.end_at) delete data.end_at;
@@ -357,6 +393,7 @@ async function cancelRepair(record: RepairOrder) {
 }
 
 onMounted(loadAll);
+onMounted(loadCostAnalysis);
 </script>
 
 <template>
@@ -499,6 +536,8 @@ onMounted(loadAll);
                 <a-button v-if="['REPORTED', 'ASSIGNED'].includes(record.status)" type="link" size="small" @click="openAssignRepair(record)">指派</a-button>
                 <a-popconfirm v-if="['REPORTED', 'ASSIGNED'].includes(record.status)" title="确认开始维修？" @confirm="startRepair(record)"><a-button type="link" size="small">开始</a-button></a-popconfirm>
                 <a-button v-if="record.status === 'IN_REPAIR'" type="link" size="small" @click="openCompleteRepair(record)">完成</a-button>
+                <a-button v-if="['IN_REPAIR', 'COMPLETED'].includes(record.status)" type="link" size="small" @click="openIssuePart(record)">领备件</a-button>
+                <a-button v-if="record.status === 'COMPLETED' && !record.repair_cost" type="link" size="small" @click="openPostCost(record)">费用入账</a-button>
                 <a-popconfirm v-if="!['COMPLETED', 'CANCELLED'].includes(record.status)" title="确认取消维修工单并关闭关联停机？" @confirm="cancelRepair(record)"><a-button danger type="link" size="small">取消</a-button></a-popconfirm>
               </a-space>
             </template>
@@ -542,6 +581,29 @@ onMounted(loadAll);
           <a-table-column title="原因" data-index="reason" width="220" ellipsis />
           <a-table-column title="状态" key="status" width="90" />
           <a-table-column title="操作" key="action" width="100" fixed="right" />
+        </a-table>
+      </a-tab-pane>
+
+      <a-tab-pane key="cost-analysis" tab="维修成本分析">
+        <div class="mb-3 flex items-center gap-3">
+          <span>停机每小时成本</span>
+          <a-input-number v-model:value="downtimeHourlyCost" :min="0" :precision="2" />
+          <a-button type="primary" @click="loadCostAnalysis">重算分析</a-button>
+        </div>
+        <a-row :gutter="12">
+          <a-col :span="6"><a-card><a-statistic title="维修工单" :value="costAnalysis.repair_count" /></a-card></a-col>
+          <a-col :span="6"><a-card><a-statistic title="备件费用" :value="Number(costAnalysis.total_parts_cost)" :precision="2" /></a-card></a-col>
+          <a-col :span="6"><a-card><a-statistic title="人工费用" :value="Number(costAnalysis.total_labor_cost)" :precision="2" /></a-card></a-col>
+          <a-col :span="6"><a-card><a-statistic title="停机成本" :value="Number(costAnalysis.downtime_cost)" :precision="2" /></a-card></a-col>
+        </a-row>
+        <a-table class="mt-3" :data-source="costAnalysis.rows" row-key="repair_id" :pagination="{ pageSize: 20 }" :scroll="{ x: 1100 }">
+          <a-table-column title="维修单号" data-index="repair_no" />
+          <a-table-column title="设备" data-index="equipment_name" />
+          <a-table-column title="备件费用" data-index="parts_cost" />
+          <a-table-column title="人工费用" data-index="labor_cost" />
+          <a-table-column title="维修总费用" data-index="total_cost" />
+          <a-table-column title="停机分钟" data-index="downtime_minutes" />
+          <a-table-column title="停机成本" data-index="downtime_cost" />
         </a-table>
       </a-tab-pane>
     </a-tabs>
@@ -623,6 +685,25 @@ onMounted(loadAll);
             <a-col :span="12"><a-form-item label="完成时间"><a-date-picker v-model:value="form.completed_at" show-time value-format="YYYY-MM-DD HH:mm:ss" class="w-full" /></a-form-item></a-col>
           </a-row>
           <a-form-item label="备注"><a-textarea v-model:value="form.remark" :rows="2" /></a-form-item>
+        </template>
+
+        <template v-else-if="dialogKind === 'issuePart'">
+          <a-alert class="mb-4" :message="`${selectedRepair?.repair_no} · ${selectedRepair?.equipment_name}`" type="info" />
+          <a-row :gutter="16">
+            <a-col :span="8"><a-form-item label="物料 ID" required><a-input-number v-model:value="form.material_id" :min="1" class="w-full" /></a-form-item></a-col>
+            <a-col :span="8"><a-form-item label="仓库 ID" required><a-input-number v-model:value="form.warehouse_id" :min="1" class="w-full" /></a-form-item></a-col>
+            <a-col :span="8"><a-form-item label="库位 ID" required><a-input-number v-model:value="form.location_id" :min="1" class="w-full" /></a-form-item></a-col>
+            <a-col :span="8"><a-form-item label="领用数量" required><a-input-number v-model:value="form.quantity" :min="0.000001" :precision="6" class="w-full" /></a-form-item></a-col>
+            <a-col :span="8"><a-form-item label="单位成本"><a-input-number v-model:value="form.unit_cost" :min="0" :precision="6" class="w-full" /></a-form-item></a-col>
+          </a-row>
+          <a-form-item label="幂等键" required><a-input v-model:value="form.idempotency_key" /></a-form-item>
+          <a-form-item label="备注"><a-textarea v-model:value="form.remark" :rows="2" /></a-form-item>
+        </template>
+
+        <template v-else-if="dialogKind === 'postCost'">
+          <a-alert class="mb-4" :message="`${selectedRepair?.repair_no} · ${selectedRepair?.equipment_name}`" type="info" />
+          <a-form-item label="财务期间 ID" required><a-input-number v-model:value="form.period_id" :min="1" class="w-full" /></a-form-item>
+          <a-form-item label="人工费用"><a-input-number v-model:value="form.labor_cost" :min="0" :precision="6" class="w-full" /></a-form-item>
         </template>
 
         <template v-else-if="dialogKind === 'downtime'">

@@ -1,6 +1,7 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Path
+from decimal import Decimal
+from fastapi import APIRouter, Depends, Path, Query
 
 from backend.common.response.response_schema import ResponseSchemaModel, response_base
 from backend.common.security.jwt import DependsJwtAuth
@@ -24,6 +25,11 @@ from backend.plugin.maintenance.schema.maintenance import (
     StartRepair,
     StartTask,
     UpdateMaintenancePlan,
+    IssueRepairPart,
+    RepairPartIssueDetail,
+    PostRepairCost,
+    RepairCostPostingDetail,
+    RepairCostAnalysisSummary,
 )
 from backend.plugin.maintenance.service import maintenance_service
 
@@ -95,6 +101,26 @@ async def start_repair(db: CurrentSessionTransaction, repair_id: Annotated[int, 
 @router.post('/repairs/{repair_id}/complete', dependencies=[Depends(RequestPermission('mes:maintenance:repair')), DependsRBAC])
 async def complete_repair(db: CurrentSessionTransaction, repair_id: Annotated[int, Path(ge=1)], obj: CompleteRepair) -> ResponseSchemaModel[RepairOrderDetail]:
     return response_base.success(data=await maintenance_service.complete_repair(db, repair_id, obj))
+
+
+@router.get('/repairs/cost-analysis', dependencies=view_dependencies)
+async def repair_cost_analysis(db: CurrentSession, period_id: int | None = Query(default=None, ge=1), hourly_downtime_cost: Decimal = Query(default=Decimal('0'), ge=0)) -> ResponseSchemaModel[RepairCostAnalysisSummary]:
+    return response_base.success(data=await maintenance_service.repair_cost_analysis(db, period_id, hourly_downtime_cost))
+
+
+@router.get('/repairs/{repair_id}/parts', dependencies=view_dependencies)
+async def list_repair_parts(db: CurrentSession, repair_id: Annotated[int, Path(ge=1)]) -> ResponseSchemaModel[list[RepairPartIssueDetail]]:
+    return response_base.success(data=await maintenance_service.list_repair_parts(db, repair_id))
+
+
+@router.post('/repairs/{repair_id}/parts', dependencies=[Depends(RequestPermission('mes:maintenance:repair')), DependsRBAC])
+async def issue_repair_part(db: CurrentSessionTransaction, repair_id: Annotated[int, Path(ge=1)], obj: IssueRepairPart) -> ResponseSchemaModel[RepairPartIssueDetail]:
+    return response_base.success(data=await maintenance_service.issue_repair_part(db, repair_id, obj))
+
+
+@router.post('/repairs/{repair_id}/cost/post', dependencies=[Depends(RequestPermission('mes:maintenance:repair')), DependsRBAC])
+async def post_repair_cost(db: CurrentSessionTransaction, repair_id: Annotated[int, Path(ge=1)], obj: PostRepairCost) -> ResponseSchemaModel[RepairCostPostingDetail]:
+    return response_base.success(data=await maintenance_service.post_repair_cost(db, repair_id, obj))
 
 
 @router.post('/repairs/{repair_id}/cancel', dependencies=[Depends(RequestPermission('mes:maintenance:repair')), DependsRBAC])

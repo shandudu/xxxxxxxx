@@ -172,3 +172,57 @@ class RepairOrder(Base):
     remark: Mapped[str | None] = mapped_column(UniversalText, default=None)
     created_by: Mapped[int | None] = mapped_column(sa.BigInteger, init=False, default=None)
     updated_by: Mapped[int | None] = mapped_column(sa.BigInteger, init=False, default=None)
+
+
+class RepairPartIssue(Base):
+    """Spare-part issue posted to inventory for a repair order."""
+
+    __tablename__ = 'mes_repair_part_issue'
+    __table_args__ = (
+        sa.ForeignKeyConstraint(['repair_id'], ['mes_repair_order.id'], name='fk_repair_part_issue_repair'),
+        sa.ForeignKeyConstraint(['material_id'], ['mes_material.id'], name='fk_repair_part_issue_material'),
+        sa.ForeignKeyConstraint(['lot_id'], ['mes_material_lot.id'], name='fk_repair_part_issue_lot'),
+        sa.ForeignKeyConstraint(['warehouse_id'], ['mes_warehouse.id'], name='fk_repair_part_issue_warehouse'),
+        sa.ForeignKeyConstraint(['location_id'], ['mes_location.id'], name='fk_repair_part_issue_location'),
+        sa.UniqueConstraint('idempotency_key', 'deleted', name='uk_repair_part_issue_idempotency'),
+        sa.Index('idx_repair_part_issue_repair', 'repair_id', 'issued_at'),
+        {'comment': 'MES repair spare-part issues linked to inventory transactions'},
+    )
+
+    id: Mapped[id_key] = mapped_column(init=False)
+    repair_id: Mapped[int] = mapped_column(sa.BigInteger)
+    material_id: Mapped[int] = mapped_column(sa.BigInteger)
+    warehouse_id: Mapped[int] = mapped_column(sa.BigInteger)
+    location_id: Mapped[int] = mapped_column(sa.BigInteger)
+    quantity: Mapped[Decimal] = mapped_column(sa.Numeric(18, 6))
+    idempotency_key: Mapped[str] = mapped_column(sa.String(180))
+    issued_at: Mapped[datetime] = mapped_column(TimeZone)
+    lot_id: Mapped[int | None] = mapped_column(sa.BigInteger, default=None)
+    unit_cost: Mapped[Decimal] = mapped_column(sa.Numeric(18, 6), default=Decimal('0'), server_default='0')
+    total_cost: Mapped[Decimal] = mapped_column(sa.Numeric(18, 6), default=Decimal('0'), server_default='0')
+    stock_transaction_id: Mapped[int | None] = mapped_column(sa.BigInteger, default=None)
+    remark: Mapped[str | None] = mapped_column(UniversalText, default=None)
+
+
+class RepairCostPosting(Base):
+    """Posted repair cost summary and its GL voucher."""
+
+    __tablename__ = 'mes_repair_cost_posting'
+    __table_args__ = (
+        sa.ForeignKeyConstraint(['repair_id'], ['mes_repair_order.id'], name='fk_repair_cost_posting_repair'),
+        sa.ForeignKeyConstraint(['period_id'], ['erp_finance_period.id'], name='fk_repair_cost_posting_period'),
+        sa.ForeignKeyConstraint(['voucher_id'], ['erp_gl_voucher.id'], name='fk_repair_cost_posting_voucher'),
+        sa.UniqueConstraint('repair_id', 'deleted', name='uk_repair_cost_posting_repair'),
+        sa.Index('idx_repair_cost_posting_period', 'period_id', 'posted_at'),
+        {'comment': 'MES repair cost posting to general ledger'},
+    )
+
+    id: Mapped[id_key] = mapped_column(init=False)
+    repair_id: Mapped[int] = mapped_column(sa.BigInteger)
+    period_id: Mapped[int] = mapped_column(sa.BigInteger)
+    posted_at: Mapped[datetime] = mapped_column(TimeZone)
+    parts_cost: Mapped[Decimal] = mapped_column(sa.Numeric(18, 6), default=Decimal('0'), server_default='0')
+    labor_cost: Mapped[Decimal] = mapped_column(sa.Numeric(18, 6), default=Decimal('0'), server_default='0')
+    total_cost: Mapped[Decimal] = mapped_column(sa.Numeric(18, 6), default=Decimal('0'), server_default='0')
+    voucher_id: Mapped[int | None] = mapped_column(sa.BigInteger, default=None)
+    remark: Mapped[str | None] = mapped_column(UniversalText, default=None)

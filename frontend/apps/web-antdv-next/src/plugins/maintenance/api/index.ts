@@ -110,6 +110,21 @@ export interface RepairOrder {
   created_time: string;
 }
 
+export interface RepairPartIssue {
+  id: number; repair_id: number; material_id: number; lot_id?: number; warehouse_id: number; location_id: number;
+  quantity: number; unit_cost: number; total_cost: number; idempotency_key: string; stock_transaction_id?: number; issued_at: string; remark?: string;
+}
+
+export interface RepairCostAnalysisRow {
+  repair_id: number; repair_no: string; equipment_id: number; equipment_code: string; equipment_name: string; repair_status: RepairStatus;
+  parts_cost: number; labor_cost: number; total_cost: number; downtime_minutes: number; downtime_cost: number;
+}
+
+export interface RepairCostAnalysisSummary {
+  period_id?: number; hourly_downtime_cost: number; repair_count: number; downtime_minutes: number; downtime_cost: number;
+  total_parts_cost: number; total_labor_cost: number; total_repair_cost: number; rows: RepairCostAnalysisRow[];
+}
+
 export interface EquipmentDowntime {
   id: number;
   downtime_no: string;
@@ -193,6 +208,10 @@ export const completeRepairOrderApi = (id: number, data: Recordable<any>) =>
   requestClient.post<RepairOrder>(`${baseUrl}/repairs/${id}/complete`, data);
 export const cancelRepairOrderApi = (id: number) =>
   requestClient.post<RepairOrder>(`${baseUrl}/repairs/${id}/cancel`);
+export const getRepairPartsApi = (id: number) => requestClient.get<RepairPartIssue[]>(`${baseUrl}/repairs/${id}/parts`);
+export const issueRepairPartApi = (id: number, data: Recordable<any>) => requestClient.post<RepairPartIssue>(`${baseUrl}/repairs/${id}/parts`, data);
+export const postRepairCostApi = (id: number, data: Recordable<any>) => requestClient.post(`${baseUrl}/repairs/${id}/cost/post`, data);
+export const getRepairCostAnalysisApi = (params?: { period_id?: number; hourly_downtime_cost?: number }) => requestClient.get<RepairCostAnalysisSummary>(`${baseUrl}/repairs/cost-analysis`, { params });
 
 export const getEquipmentDowntimesApi = () =>
   requestClient.get<EquipmentDowntime[]>(`${baseUrl}/downtimes`);
