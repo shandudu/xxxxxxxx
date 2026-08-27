@@ -1,0 +1,19 @@
+[plugin]
+summary = "MES APS finite-capacity scheduling"
+version = "0.1.0"
+description = "Shift calendars, finite-capacity operation scheduling, load analysis and dispatch"
+author = "fba"
+tags = ["task", "other"]
+database = ["mysql", "postgresql"]
+depends_on = ["routing", "production", "planning", "maintenance", "equipment"]
+
+[app]
+extend = "admin"
+
+[api.scheduling]
+prefix = "/scheduling"
+tags = "MES APS finite-capacity scheduling"
+
+[api.shopfloor]
+prefix = "/shopfloor"
+tags = "MES shop-floor dispatch and workstation terminal"

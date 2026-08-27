@@ -1,0 +1,121 @@
+{
+  "menu": "仓库设置",
+  "warehouseList": "仓库列表",
+  "storageStructure": "仓储结构",
+  "currentNode": "当前节点属性",
+  "searchResults": "搜索结果",
+  "action": {
+    "add": "新增",
+    "edit": "编辑",
+    "configureArea": "配置下级区域",
+    "configureLocation": "配置库位",
+    "generateLocations": "批量生成库位",
+    "editArea": "调整区域属性",
+    "editLocation": "调整库位属性",
+    "moveLocation": "调整位置"
+  },
+  "empty": {
+    "noWarehouse": "尚未配置仓库",
+    "configureWarehouseFirst": "请先配置仓库",
+    "noStructure": "当前仓库尚未配置仓储结构",
+    "selectNode": "请选择仓库结构节点"
+  },
+  "placeholder": {
+    "searchLocation": "搜索库位编码"
+  },
+  "common": {
+    "yes": "是",
+    "no": "否"
+  },
+  "title": {
+    "createWarehouse": "创建仓库配置",
+    "editWarehouse": "调整仓库配置",
+    "createArea": "配置下级区域",
+    "editArea": "调整区域属性",
+    "createLocation": "配置下级库位",
+    "editLocation": "调整库位属性",
+    "generateLocations": "批量生成库位",
+    "moveLocation": "调整库位位置"
+  },
+  "field": {
+    "name": "名称",
+    "code": "编码",
+    "nodeType": "节点类型",
+    "status": "状态",
+    "storageAllowed": "允许存储",
+    "warehouseCode": "仓库编码",
+    "warehouseName": "仓库名称",
+    "warehouseType": "仓库类型",
+    "factoryCode": "工厂编码",
+    "allowInbound": "允许入库",
+    "allowOutbound": "允许出库",
+    "remark": "备注",
+    "areaCode": "区域编码",
+    "areaName": "区域名称",
+    "areaType": "区域类型",
+    "locationCode": "库位编码",
+    "locationName": "库位名称",
+    "locationType": "库位类型",
+    "level": "层级",
+    "parentId": "父节点 ID",
+    "areaPrefix": "区域前缀",
+    "pattern": "编码规则",
+    "rackRange": "货架范围",
+    "levelRange": "层范围",
+    "binRange": "格范围",
+    "targetParentId": "目标父节点 ID"
+  },
+  "warehouseType": {
+    "RAW_MATERIAL": "原材料仓",
+    "WIP": "半成品仓",
+    "FINISHED_PRODUCT": "成品仓",
+    "LINE_SIDE": "线边仓",
+    "QUALITY_HOLD": "待检/隔离仓",
+    "SCRAP": "不良品仓",
+    "VIRTUAL": "虚拟仓"
+  },
+  "areaType": {
+    "NORMAL": "普通区",
+    "RECEIVING": "收货暂存区",
+    "SHIPPING": "发货暂存区",
+    "QUALITY": "质检区",
+    "QUARANTINE": "隔离区",
+    "PRODUCTION": "生产区"
+  },
+  "locationType": {
+    "ZONE": "区域",
+    "AISLE": "巷道",
+    "RACK": "货架",
+    "LEVEL": "层级",
+    "BIN": "库位",
+    "FLOOR": "地面",
+    "BUFFER": "缓冲区",
+    "LINE": "生产线",
+    "WORKSTATION": "工作站",
+    "TEMP": "临时库位"
+  },
+  "nodeType": {
+    "AREA": "区域"
+  },
+  "status": {
+    "ACTIVE": "启用",
+    "AVAILABLE": "可用",
+    "LOCKED": "锁定",
+    "DISABLED": "停用"
+  },
+  "generate": {
+    "previewHint": "生成前会预览编码并校验重复项，确认后在同一事务中创建。"
+  },
+  "move": {
+    "parentHint": "目标父节点必须属于同一仓库和区域，不能是当前节点或其子节点。"
+  },
+  "message": {
+    "warehouseSaved": "仓库配置已保存",
+    "areaSaved": "区域配置已保存",
+    "locationSaved": "库位配置已保存",
+    "locationMoved": "库位位置已调整",
+    "locationConflict": "存在重复库位编码",
+    "locationsGenerated": "已生成 {0} 个库位",
+    "locationStatusUpdated": "库位状态已更新"
+  }
+}

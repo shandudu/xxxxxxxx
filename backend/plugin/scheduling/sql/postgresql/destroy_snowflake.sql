@@ -1,0 +1,17 @@
+delete from sys_role_menu where menu_id in (select id from sys_menu where name = 'MesScheduling' or parent_id in (select id from sys_menu where name = 'MesScheduling'));
+delete from sys_menu where parent_id in (select id from sys_menu where name = 'MesScheduling');
+delete from sys_menu where name = 'MesScheduling';
+delete from sys_role_menu where menu_id in (select id from sys_menu where name = 'MesShopfloor' or parent_id in (select id from sys_menu where name = 'MesShopfloor'));
+delete from sys_menu where parent_id in (select id from sys_menu where name = 'MesShopfloor');
+delete from sys_menu where name = 'MesShopfloor';
+drop table if exists mes_aps_dispatch;
+drop table if exists mes_workstation_session;
+drop table if exists mes_workstation;
+drop table if exists mes_production_team_member;
+drop table if exists mes_production_team;
+drop table if exists mes_aps_operation_schedule;
+drop table if exists mes_aps_schedule;
+drop table if exists mes_aps_work_center_calendar;
+drop table if exists mes_aps_calendar_day;
+drop table if exists mes_aps_calendar;
+drop table if exists mes_aps_shift;

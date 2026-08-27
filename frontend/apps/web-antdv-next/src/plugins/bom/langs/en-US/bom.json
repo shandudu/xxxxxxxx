@@ -1,0 +1,84 @@
+{
+  "menu": "BOM management",
+  "productList": "Producible materials",
+  "versionList": "BOM versions",
+  "detail": "BOM details",
+  "structure": "BOM structure",
+  "requirements": "Material requirement calculation",
+  "empty": {
+    "noProduct": "No producible materials",
+    "noBom": "No BOM versions",
+    "selectBom": "Select a BOM version"
+  },
+  "placeholder": {
+    "product": "Search code/name",
+    "bom": "Search BOM code/version",
+    "component": "Filter components"
+  },
+  "status": {
+    "DRAFT": "Draft",
+    "ACTIVE": "Active",
+    "INACTIVE": "Inactive"
+  },
+  "view": {
+    "list": "List",
+    "tree": "Tree"
+  },
+  "common": {
+    "default": "Default",
+    "longTerm": "Open-ended"
+  },
+  "field": {
+    "action": "Action",
+    "bomCode": "BOM code",
+    "product": "Product",
+    "component": "Component",
+    "version": "Version",
+    "baseQuantity": "Base quantity",
+    "effectiveFrom": "Effective from",
+    "effectiveTo": "Effective to",
+    "lineNo": "Line",
+    "quantity": "Standard quantity",
+    "lossRate": "Loss rate",
+    "fixedLoss": "Fixed loss",
+    "planned": "Planned quantity",
+    "standardRequired": "Theoretical requirement",
+    "plannedRequired": "Planned requirement",
+    "productionQuantity": "Production quantity",
+    "optional": "Optional component",
+    "remark": "Remark"
+  },
+  "action": {
+    "create": "Create BOM",
+    "edit": "Edit",
+    "copy": "Copy version",
+    "validate": "Validate",
+    "activate": "Activate",
+    "deactivate": "Deactivate",
+    "setDefault": "Set default",
+    "addItem": "Add component",
+    "calculate": "Calculate requirements",
+    "delete": "Delete"
+  },
+  "title": {
+    "create": "Create BOM",
+    "edit": "Edit draft BOM",
+    "addItem": "Add BOM component",
+    "editItem": "Edit BOM component",
+    "copy": "Copy BOM version",
+    "calculate": "Calculate material requirements"
+  },
+  "message": {
+    "requiredHeader": "Enter the BOM code, version and product",
+    "requiredItem": "Select a component and enter a valid quantity",
+    "saved": "BOM saved",
+    "itemSaved": "BOM component saved",
+    "itemDeleted": "BOM component deleted",
+    "confirmDelete": "Delete this BOM component?",
+    "validationPassed": "BOM validation passed",
+    "activated": "BOM activated",
+    "deactivated": "BOM deactivated",
+    "defaultSet": "Default BOM switched",
+    "copied": "BOM version copied"
+  }
+}

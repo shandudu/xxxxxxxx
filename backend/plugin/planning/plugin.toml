@@ -1,0 +1,15 @@
+[plugin]
+summary = "MES MPS and MRP planning"
+version = "0.1.0"
+description = "Master production schedules, multi-level material planning and planned-order release"
+author = "fba"
+tags = ["task", "other"]
+database = ["mysql", "postgresql"]
+depends_on = ["material", "bom", "routing", "inventory", "purchasing", "production", "sales"]
+
+[app]
+extend = "admin"
+
+[api.planning]
+prefix = "/planning"
+tags = "MES MPS MRP planning"

@@ -1,0 +1,2 @@
+from backend.plugin.operation_material.model.operation_material import OperationMaterialPlan,OperationMaterialRequirement
+__all__=['OperationMaterialPlan','OperationMaterialRequirement']

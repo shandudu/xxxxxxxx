@@ -1,0 +1,15 @@
+[plugin]
+summary = "MES manufacturing performance analytics"
+version = "0.1.0"
+description = "OEE, MTBF, MTTR, cycle-time and capacity analytics"
+author = "fba"
+tags = ["task", "other"]
+database = ["mysql", "postgresql"]
+depends_on = ["production", "routing", "scheduling", "maintenance", "equipment"]
+
+[app]
+extend = "admin"
+
+[api.performance]
+prefix = "/performance"
+tags = "MES manufacturing performance analytics"

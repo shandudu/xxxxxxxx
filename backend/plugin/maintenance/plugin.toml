@@ -1,0 +1,15 @@
+[plugin]
+summary = "MES equipment maintenance and downtime"
+version = "0.1.0"
+description = "Inspection plans, preventive maintenance, repair orders and downtime management"
+author = "fba"
+tags = ["task", "other"]
+database = ["mysql", "postgresql"]
+depends_on = ["equipment", "routing", "production"]
+
+[app]
+extend = "admin"
+
+[api.maintenance]
+prefix = "/maintenance"
+tags = "MES equipment maintenance"

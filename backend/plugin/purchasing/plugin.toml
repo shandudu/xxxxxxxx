@@ -1,0 +1,15 @@
+[plugin]
+summary = "ERP purchase orders and supplier receipts"
+version = "0.1.0"
+description = "Purchase order lifecycle and idempotent supplier receipt posting into MES inventory"
+author = "fba"
+tags = ["storage", "other"]
+database = ["mysql", "postgresql"]
+depends_on = ["supplier", "material", "warehouse", "trace", "inventory"]
+
+[app]
+extend = "admin"
+
+[api.purchasing]
+prefix = "/purchasing"
+tags = "ERP purchasing"

@@ -1,0 +1,94 @@
+{
+  "menu": "Equipment master data",
+  "categoryTree": "Equipment categories",
+  "allEquipment": "All equipment",
+  "detail": "Equipment details",
+  "empty": { "selectEquipment": "Select equipment" },
+  "placeholder": {
+    "categorySearch": "Search categories",
+    "keyword": "Code/name/model/manufacturer/SN"
+  },
+  "action": {
+    "create": "Create equipment",
+    "configure": "Configure",
+    "manageCategories": "Manage categories",
+    "addChild": "Add child",
+    "editCategory": "Edit category",
+    "disable": "Disable",
+    "enable": "Enable",
+    "reset": "Reset",
+    "cancel": "Cancel",
+    "save": "Save"
+  },
+  "title": {
+    "create": "Create equipment",
+    "configure": "Configure equipment",
+    "createCategory": "Create equipment category",
+    "configureCategory": "Configure equipment category"
+  },
+  "group": {
+    "basic": "Basic information",
+    "location": "Location",
+    "operation": "Operating attributes",
+    "collection": "Data collection",
+    "maintenance": "Maintenance",
+    "system": "System information"
+  },
+  "field": {
+    "code": "Equipment code",
+    "name": "Equipment name",
+    "category": "Category",
+    "categoryCode": "Category code",
+    "categoryName": "Category name",
+    "parentCategory": "Parent category",
+    "categoryStatus": "Category status",
+    "sortNo": "Sort no.",
+    "type": "Equipment type",
+    "model": "Model",
+    "manufacturer": "Manufacturer",
+    "serialNumber": "Serial number",
+    "factory": "Factory",
+    "area": "Area",
+    "installationLocation": "Installation location",
+    "status": "Status",
+    "enabled": "Enabled",
+    "productionEnabled": "Production enabled",
+    "dataCollectionEnabled": "Data collection enabled",
+    "maintenanceEnabled": "Maintenance enabled",
+    "commissionDate": "Commission date",
+    "serviceDate": "Service date",
+    "ratedCapacity": "Rated capacity",
+    "capacityUnit": "Capacity unit",
+    "remark": "Remark",
+    "createdTime": "Created time",
+    "updatedTime": "Updated time",
+    "createdBy": "Created by",
+    "updatedBy": "Updated by"
+  },
+  "status": {
+    "IDLE": "Idle",
+    "RUNNING": "Running",
+    "DOWN": "Down",
+    "MAINTENANCE": "Maintenance",
+    "OFFLINE": "Offline",
+    "DISABLED": "Disabled"
+  },
+  "categoryStatus": { "ACTIVE": "Active", "DISABLED": "Disabled" },
+  "equipmentType": {
+    "PRODUCTION": "Production",
+    "INSPECTION": "Inspection",
+    "LOGISTICS": "Logistics",
+    "UTILITY": "Utility",
+    "TOOL": "Tooling",
+    "OTHER": "Other"
+  },
+  "filter": { "yes": "Yes", "no": "No" },
+  "message": {
+    "requiredBasic": "Equipment code and name are required",
+    "requiredCategory": "Select an active equipment category",
+    "saved": "Equipment saved",
+    "statusUpdated": "Equipment status updated",
+    "enabledUpdated": "Equipment enabled state updated",
+    "categorySaved": "Equipment category saved"
+  }
+}

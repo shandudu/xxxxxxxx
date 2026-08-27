@@ -1,0 +1,2 @@
+from backend.plugin.operation_material.service.operation_material_service import operation_material_service
+__all__=['operation_material_service']

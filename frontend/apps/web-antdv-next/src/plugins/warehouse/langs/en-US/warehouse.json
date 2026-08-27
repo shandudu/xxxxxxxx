@@ -1,0 +1,121 @@
+{
+  "menu": "Warehouse settings",
+  "warehouseList": "Warehouse list",
+  "storageStructure": "Storage structure",
+  "currentNode": "Current node properties",
+  "searchResults": "Search results",
+  "action": {
+    "add": "Add",
+    "edit": "Edit",
+    "configureArea": "Configure sub-area",
+    "configureLocation": "Configure location",
+    "generateLocations": "Generate locations",
+    "editArea": "Edit area",
+    "editLocation": "Edit location",
+    "moveLocation": "Move location"
+  },
+  "empty": {
+    "noWarehouse": "No warehouses configured",
+    "configureWarehouseFirst": "Please configure a warehouse first",
+    "noStructure": "No storage structure configured for this warehouse",
+    "selectNode": "Please select a storage structure node"
+  },
+  "placeholder": {
+    "searchLocation": "Search location code"
+  },
+  "common": {
+    "yes": "Yes",
+    "no": "No"
+  },
+  "title": {
+    "createWarehouse": "Create warehouse",
+    "editWarehouse": "Edit warehouse",
+    "createArea": "Configure sub-area",
+    "editArea": "Edit area",
+    "createLocation": "Configure sub-location",
+    "editLocation": "Edit location",
+    "generateLocations": "Generate locations",
+    "moveLocation": "Move location"
+  },
+  "field": {
+    "name": "Name",
+    "code": "Code",
+    "nodeType": "Node type",
+    "status": "Status",
+    "storageAllowed": "Storage allowed",
+    "warehouseCode": "Warehouse code",
+    "warehouseName": "Warehouse name",
+    "warehouseType": "Warehouse type",
+    "factoryCode": "Factory code",
+    "allowInbound": "Allow inbound",
+    "allowOutbound": "Allow outbound",
+    "remark": "Remark",
+    "areaCode": "Area code",
+    "areaName": "Area name",
+    "areaType": "Area type",
+    "locationCode": "Location code",
+    "locationName": "Location name",
+    "locationType": "Location type",
+    "level": "Level",
+    "parentId": "Parent node ID",
+    "areaPrefix": "Area prefix",
+    "pattern": "Code pattern",
+    "rackRange": "Rack range",
+    "levelRange": "Level range",
+    "binRange": "Bin range",
+    "targetParentId": "Target parent node ID"
+  },
+  "warehouseType": {
+    "RAW_MATERIAL": "Raw material warehouse",
+    "WIP": "Work-in-process warehouse",
+    "FINISHED_PRODUCT": "Finished product warehouse",
+    "LINE_SIDE": "Line-side warehouse",
+    "QUALITY_HOLD": "Quality hold warehouse",
+    "SCRAP": "Scrap warehouse",
+    "VIRTUAL": "Virtual warehouse"
+  },
+  "areaType": {
+    "NORMAL": "Normal area",
+    "RECEIVING": "Receiving buffer",
+    "SHIPPING": "Shipping buffer",
+    "QUALITY": "Quality inspection area",
+    "QUARANTINE": "Quarantine area",
+    "PRODUCTION": "Production area"
+  },
+  "locationType": {
+    "ZONE": "Zone",
+    "AISLE": "Aisle",
+    "RACK": "Rack",
+    "LEVEL": "Level",
+    "BIN": "Bin",
+    "FLOOR": "Floor",
+    "BUFFER": "Buffer",
+    "LINE": "Production line",
+    "WORKSTATION": "Workstation",
+    "TEMP": "Temporary location"
+  },
+  "nodeType": {
+    "AREA": "Area"
+  },
+  "status": {
+    "ACTIVE": "Active",
+    "AVAILABLE": "Available",
+    "LOCKED": "Locked",
+    "DISABLED": "Disabled"
+  },
+  "generate": {
+    "previewHint": "Codes will be previewed and checked for duplicates before creation in one transaction."
+  },
+  "move": {
+    "parentHint": "The target parent must belong to the same warehouse and area, and cannot be the current node or its child."
+  },
+  "message": {
+    "warehouseSaved": "Warehouse configuration saved",
+    "areaSaved": "Area configuration saved",
+    "locationSaved": "Location configuration saved",
+    "locationMoved": "Location moved",
+    "locationConflict": "Duplicate location codes found",
+    "locationsGenerated": "Generated {0} locations",
+    "locationStatusUpdated": "Location status updated"
+  }
+}

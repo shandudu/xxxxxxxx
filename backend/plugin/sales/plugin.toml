@@ -1,0 +1,15 @@
+[plugin]
+summary = "ERP sales orders and inventory shipments"
+version = "0.1.0"
+description = "Customer sales order lifecycle and quality-gated stock shipment"
+author = "fba"
+tags = ["storage", "other"]
+database = ["mysql", "postgresql"]
+depends_on = ["customer", "material", "trace", "inventory", "quality"]
+
+[app]
+extend = "admin"
+
+[api.sales]
+prefix = "/sales"
+tags = "ERP sales"

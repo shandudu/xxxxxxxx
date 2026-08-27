@@ -1,0 +1,84 @@
+{
+  "menu": "BOM管理",
+  "productList": "可生产物料",
+  "versionList": "BOM版本",
+  "detail": "BOM详情",
+  "structure": "BOM结构",
+  "requirements": "物料需求计算",
+  "empty": {
+    "noProduct": "暂无可生产物料",
+    "noBom": "暂无BOM版本",
+    "selectBom": "请选择一个BOM版本"
+  },
+  "placeholder": {
+    "product": "搜索物料编码/名称",
+    "bom": "搜索BOM编码/版本",
+    "component": "筛选组件"
+  },
+  "status": {
+    "DRAFT": "草稿",
+    "ACTIVE": "生效",
+    "INACTIVE": "停用"
+  },
+  "view": {
+    "list": "列表",
+    "tree": "树结构"
+  },
+  "common": {
+    "default": "默认",
+    "longTerm": "长期有效"
+  },
+  "field": {
+    "action": "操作",
+    "bomCode": "BOM编码",
+    "product": "产品",
+    "component": "组件",
+    "version": "版本",
+    "baseQuantity": "基准数量",
+    "effectiveFrom": "生效时间",
+    "effectiveTo": "失效时间",
+    "lineNo": "行号",
+    "quantity": "标准用量",
+    "lossRate": "损耗率",
+    "fixedLoss": "固定损耗",
+    "planned": "计划用量",
+    "standardRequired": "理论需求",
+    "plannedRequired": "计划需求",
+    "productionQuantity": "生产数量",
+    "optional": "可选组件",
+    "remark": "备注"
+  },
+  "action": {
+    "create": "创建BOM",
+    "edit": "编辑",
+    "copy": "复制版本",
+    "validate": "校验",
+    "activate": "生效",
+    "deactivate": "停用",
+    "setDefault": "设为默认",
+    "addItem": "添加组件",
+    "calculate": "计算需求",
+    "delete": "删除"
+  },
+  "title": {
+    "create": "创建BOM",
+    "edit": "编辑草稿BOM",
+    "addItem": "添加BOM组件",
+    "editItem": "编辑BOM组件",
+    "copy": "复制BOM版本",
+    "calculate": "计算物料需求"
+  },
+  "message": {
+    "requiredHeader": "请填写BOM编码、版本并选择产品",
+    "requiredItem": "请选择组件并填写有效数量",
+    "saved": "BOM已保存",
+    "itemSaved": "BOM组件已保存",
+    "itemDeleted": "BOM组件已删除",
+    "confirmDelete": "确认删除这个BOM组件吗？",
+    "validationPassed": "BOM校验通过",
+    "activated": "BOM已生效",
+    "deactivated": "BOM已停用",
+    "defaultSet": "默认BOM已切换",
+    "copied": "BOM版本已复制"
+  }
+}

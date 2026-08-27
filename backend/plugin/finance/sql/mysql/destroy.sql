@@ -1,0 +1,1 @@
+delete from sys_menu where name in ('ErpFinance', 'ErpFinanceManage', 'ErpFinanceValuate', 'ErpFinanceAR', 'ErpFinanceAP', 'ErpFinanceVoucher', 'ErpFinanceBank', 'ErpFinanceClose', 'ErpFinanceCount', 'ErpFinanceTax', 'ErpFinanceCashflow', 'ErpFinanceBudget', 'ErpFinanceExpense', 'ErpFinanceAsset');

@@ -1,0 +1,94 @@
+{
+  "menu": "设备基础资料",
+  "categoryTree": "设备分类",
+  "allEquipment": "全部设备",
+  "detail": "设备详情",
+  "empty": { "selectEquipment": "请选择设备" },
+  "placeholder": {
+    "categorySearch": "搜索设备分类",
+    "keyword": "编码/名称/型号/厂家/序列号"
+  },
+  "action": {
+    "create": "创建设备",
+    "configure": "配置设备",
+    "manageCategories": "管理分类",
+    "addChild": "新增下级",
+    "editCategory": "编辑分类",
+    "disable": "停用",
+    "enable": "启用",
+    "reset": "重置",
+    "cancel": "取消",
+    "save": "保存"
+  },
+  "title": {
+    "create": "创建设备",
+    "configure": "配置设备",
+    "createCategory": "创建设备分类",
+    "configureCategory": "配置设备分类"
+  },
+  "group": {
+    "basic": "基本信息",
+    "location": "位置",
+    "operation": "运行属性",
+    "collection": "数采属性",
+    "maintenance": "维护属性",
+    "system": "系统信息"
+  },
+  "field": {
+    "code": "设备编码",
+    "name": "设备名称",
+    "category": "设备分类",
+    "categoryCode": "分类编码",
+    "categoryName": "分类名称",
+    "parentCategory": "父分类",
+    "categoryStatus": "分类状态",
+    "sortNo": "排序号",
+    "type": "设备类型",
+    "model": "型号",
+    "manufacturer": "厂家",
+    "serialNumber": "出厂序列号",
+    "factory": "工厂",
+    "area": "区域",
+    "installationLocation": "安装位置",
+    "status": "基础状态",
+    "enabled": "是否启用",
+    "productionEnabled": "允许生产",
+    "dataCollectionEnabled": "接入数据采集",
+    "maintenanceEnabled": "纳入维护",
+    "commissionDate": "投产日期",
+    "serviceDate": "开始使用日期",
+    "ratedCapacity": "额定能力",
+    "capacityUnit": "能力单位",
+    "remark": "备注",
+    "createdTime": "创建时间",
+    "updatedTime": "更新时间",
+    "createdBy": "创建人",
+    "updatedBy": "更新人"
+  },
+  "status": {
+    "IDLE": "空闲",
+    "RUNNING": "运行",
+    "DOWN": "故障",
+    "MAINTENANCE": "维护中",
+    "OFFLINE": "离线",
+    "DISABLED": "停用"
+  },
+  "categoryStatus": { "ACTIVE": "启用", "DISABLED": "停用" },
+  "equipmentType": {
+    "PRODUCTION": "生产设备",
+    "INSPECTION": "检测设备",
+    "LOGISTICS": "物流设备",
+    "UTILITY": "公辅设备",
+    "TOOL": "工装/工具设备",
+    "OTHER": "其他"
+  },
+  "filter": { "yes": "是", "no": "否" },
+  "message": {
+    "requiredBasic": "设备编码和名称不能为空",
+    "requiredCategory": "请选择启用的设备分类",
+    "saved": "设备已保存",
+    "statusUpdated": "设备状态已更新",
+    "enabledUpdated": "设备启停状态已更新",
+    "categorySaved": "设备分类已保存"
+  }
+}

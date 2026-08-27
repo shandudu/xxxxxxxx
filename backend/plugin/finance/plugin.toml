@@ -1,0 +1,15 @@
+[plugin]
+summary = "ERP inventory valuation, AR/AP and general ledger"
+version = "0.1.0"
+description = "Inventory valuation, receivable/payable settlement, vouchers and management profit dashboard"
+author = "fba"
+tags = ["erp", "finance", "accounting"]
+database = ["mysql", "postgresql"]
+depends_on = ["inventory", "purchasing", "sales", "customer", "supplier", "costing"]
+
+[app]
+extend = "admin"
+
+[api.finance]
+prefix = "/finance"
+tags = "ERP finance and accounting"

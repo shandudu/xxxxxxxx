@@ -1,0 +1,15 @@
+[plugin]
+summary = "MES warehouse configuration"
+version = "0.1.0"
+description = "Warehouse, area and location configuration for MES/WMS"
+author = "fba"
+tags = ["storage"]
+database = ["mysql", "postgresql"]
+
+[app]
+extend = "admin"
+
+[api.warehouse]
+prefix = "/warehouse"
+tags = "MES warehouse configuration"
+

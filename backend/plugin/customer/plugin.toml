@@ -1,0 +1,14 @@
+[plugin]
+summary = "ERP customer master data"
+version = "0.1.0"
+description = "Customer categories, customer accounts, contacts and delivery addresses"
+author = "fba"
+tags = ["other"]
+database = ["mysql", "postgresql"]
+
+[app]
+extend = "admin"
+
+[api.customer]
+prefix = "/customer"
+tags = "ERP customer master data"

@@ -1,0 +1,15 @@
+[plugin]
+summary = "MES material master data"
+version = "0.1.0"
+description = "Material categories, units and material master data for MES/ERP"
+author = "fba"
+tags = ["storage"]
+database = ["mysql", "postgresql"]
+depends_on = ["warehouse"]
+
+[app]
+extend = "admin"
+
+[api.material]
+prefix = "/material"
+tags = "MES material master data"

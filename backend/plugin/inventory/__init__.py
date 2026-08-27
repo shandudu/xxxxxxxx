@@ -1,0 +1,1 @@
+"""MES inventory accounting plugin."""

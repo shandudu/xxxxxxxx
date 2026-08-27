@@ -311,11 +311,18 @@ def run(host: str, port: int, reload: bool, workers: int) -> None:  # ruff:ignor
         panel_content.append('无', style='white')
 
     if settings.ENVIRONMENT == 'dev':
-        panel_content.append(f'\n\n📖 Swagger 文档: {docs_url}', style='bold magenta')
-        panel_content.append(f'\n📚 Redoc   文档: {redoc_url}', style='bold magenta')
-        panel_content.append(f'\n📡 OpenAPI JSON: {openapi_url}', style='bold magenta')
+        # 原始 Emoji 输出：Windows GBK 控制台可能无法编码，导致服务启动前
+        # 因 UnicodeEncodeError 退出，因此暂时保留并注释掉。
+        # panel_content.append(f'\n\n📖 Swagger 文档: {docs_url}', style='bold magenta')
+        # panel_content.append(f'\n📚 Redoc   文档: {redoc_url}', style='bold magenta')
+        # panel_content.append(f'\n📡 OpenAPI JSON: {openapi_url}', style='bold magenta')
+        panel_content.append(f'\n\nSwagger 文档: {docs_url}', style='bold magenta')
+        panel_content.append(f'\nRedoc   文档: {redoc_url}', style='bold magenta')
+        panel_content.append(f'\nOpenAPI JSON: {openapi_url}', style='bold magenta')
 
-    panel_content.append('\n🌐 架构官方文档: ', style='bold magenta')
+    # 原始 Emoji 输出，保留以便以后在 UTF-8 终端中恢复。
+    # panel_content.append('\n🌐 架构官方文档: ', style='bold magenta')
+    panel_content.append('\n架构官方文档: ', style='bold magenta')
     panel_content.append('https://docs.fba.wu-clan.cc/fastapi_best_architecture_docs/')
 
     console.print(Panel(panel_content, title=f'fba (v{__version__})', border_style='purple', padding=(1, 2)))
@@ -685,7 +692,7 @@ async def generate(*, preview: bool = False) -> None:
 def run_alembic(*args: str) -> None:
     """执行 alembic 命令"""
     try:
-        subprocess.run(['alembic', *args], cwd=BASE_PATH.parent, check=True)
+        subprocess.run([sys.executable, '-m', 'alembic', *args], cwd=BASE_PATH.parent, check=True)
     except subprocess.CalledProcessError as e:
         raise cappa.Exit('Alembic 命令执行失败', code=e.returncode)
 

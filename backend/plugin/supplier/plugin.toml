@@ -1,0 +1,15 @@
+[plugin]
+summary = "ERP supplier master data"
+version = "0.1.0"
+description = "Supplier, supplier category, contact and supplier-material master data"
+author = "fba"
+tags = ["storage", "other"]
+database = ["mysql", "postgresql"]
+depends_on = ["material"]
+
+[app]
+extend = "admin"
+
+[api.supplier]
+prefix = "/supplier"
+tags = "ERP supplier master data"

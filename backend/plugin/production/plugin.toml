@@ -1,0 +1,15 @@
+[plugin]
+summary = "MES work orders, issue, return and completion"
+version = "0.1.0"
+description = "Version snapshots, material requirements, production issue/return and finished-goods receipt"
+author = "fba"
+tags = ["storage", "other"]
+database = ["mysql", "postgresql"]
+depends_on = ["material", "bom", "routing", "warehouse", "trace", "inventory", "operation_material"]
+
+[app]
+extend = "admin"
+
+[api.production]
+prefix = "/production"
+tags = "MES production"

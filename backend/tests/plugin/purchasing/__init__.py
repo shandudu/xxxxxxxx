@@ -1,0 +1,1 @@
+"""Purchasing plugin tests."""

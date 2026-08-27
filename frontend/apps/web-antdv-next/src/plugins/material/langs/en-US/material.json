@@ -1,0 +1,86 @@
+{
+  "menu": "Material master data",
+  "categoryTree": "Material categories",
+  "allMaterials": "All materials",
+  "detail": "Material details",
+  "empty": {
+    "selectMaterial": "Select a material"
+  },
+  "placeholder": {
+    "categorySearch": "Search categories",
+    "keyword": "Code/name/spec/model"
+  },
+  "action": {
+    "create": "Create material",
+    "configure": "Configure",
+    "disable": "Disable",
+    "enable": "Enable",
+    "reset": "Reset",
+    "cancel": "Cancel",
+    "save": "Save"
+  },
+  "title": {
+    "create": "Create material",
+    "configure": "Configure material"
+  },
+  "group": {
+    "basic": "Basic information",
+    "business": "Production / purchasing",
+    "traceability": "Traceability",
+    "quality": "Quality",
+    "storage": "Storage",
+    "system": "System information"
+  },
+  "field": {
+    "code": "Material code",
+    "name": "Material name",
+    "shortName": "Short name",
+    "type": "Material type",
+    "category": "Category",
+    "unit": "Base unit",
+    "specification": "Specification",
+    "model": "Model",
+    "status": "Status",
+    "purchasable": "Purchasable",
+    "producible": "Producible",
+    "sellable": "Sellable",
+    "batchControl": "Batch control",
+    "serialControl": "Serial control",
+    "shelfLife": "Shelf life (days)",
+    "qualityInspection": "Quality inspection",
+    "defaultWarehouse": "Default warehouse",
+    "remark": "Remark",
+    "createdTime": "Created time",
+    "updatedTime": "Updated time"
+  },
+  "filter": {
+    "batch": "Batch control",
+    "batchYes": "Batch: yes",
+    "batchNo": "Batch: no",
+    "businessYes": "Yes",
+    "businessNo": "No"
+  },
+  "common": {
+    "yes": "Yes",
+    "no": "No"
+  },
+  "status": {
+    "ACTIVE": "Active",
+    "DISABLED": "Disabled"
+  },
+  "materialType": {
+    "RAW_MATERIAL": "Raw material",
+    "SEMI_FINISHED": "Semi-finished",
+    "FINISHED_PRODUCT": "Finished product",
+    "AUXILIARY": "Auxiliary",
+    "PACKAGING": "Packaging",
+    "SPARE_PART": "Spare part",
+    "CONSUMABLE": "Consumable"
+  },
+  "message": {
+    "requiredBasic": "Material code and name are required",
+    "requiredReferences": "Select a material category and base unit",
+    "saved": "Material saved",
+    "statusUpdated": "Material status updated"
+  }
+}

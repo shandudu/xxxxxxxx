@@ -1,0 +1,14 @@
+[plugin]
+summary = "MES equipment master data"
+version = "0.1.0"
+description = "Equipment categories and reusable equipment master data for MES/ERP"
+author = "fba"
+tags = ["other"]
+database = ["mysql", "postgresql"]
+
+[app]
+extend = "admin"
+
+[api.equipment]
+prefix = "/equipment"
+tags = "MES equipment master data"

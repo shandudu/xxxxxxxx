@@ -1,0 +1,16 @@
+[plugin]
+summary = "MES lot, serial number and genealogy traceability"
+version = "0.1.0"
+description = "Lot/SN code rules, batch management and forward/backward manufacturing genealogy"
+author = "fba"
+tags = ["storage"]
+database = ["mysql", "postgresql"]
+depends_on = ["material"]
+
+[app]
+extend = "admin"
+
+[api.trace]
+prefix = "/trace"
+tags = "MES traceability"
+

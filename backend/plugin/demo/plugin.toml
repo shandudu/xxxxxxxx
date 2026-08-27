@@ -1,0 +1,15 @@
+[plugin]
+summary = "MES manufacturing happy-path demo"
+version = "0.1.0"
+description = "Repeatable end-to-end manufacturing demonstration and verification"
+author = "fba"
+tags = ["task", "other"]
+database = ["mysql", "postgresql"]
+depends_on = ["material", "warehouse", "supplier", "customer", "bom", "routing", "purchasing", "production", "quality", "sales", "trace"]
+
+[app]
+extend = "admin"
+
+[api.demo]
+prefix = "/demo"
+tags = "MES manufacturing demonstration"

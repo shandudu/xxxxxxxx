@@ -1,0 +1,1 @@
+"""Sales plugin tests."""

@@ -1,0 +1,13 @@
+[plugin]
+summary = "MES BOM-to-routing material allocation"
+version = "0.1.0"
+description = "Versioned operation material plans without coupling BOM items to operations"
+author = "fba"
+tags = ["storage", "other"]
+database = ["mysql", "postgresql"]
+depends_on = ["bom", "routing", "material"]
+[app]
+extend = "admin"
+[api.operation_material]
+prefix = "/operation-material-plans"
+tags = "MES operation material"

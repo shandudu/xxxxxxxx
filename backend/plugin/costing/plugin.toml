@@ -1,0 +1,15 @@
+[plugin]
+summary = "ERP production cost accounting and gross margin analysis"
+version = "0.1.0"
+description = "Material, labor, manufacturing overhead, work-order settlement and product/customer margin"
+author = "fba"
+tags = ["erp", "finance", "costing"]
+database = ["mysql", "postgresql"]
+depends_on = ["material", "inventory", "production", "purchasing", "sales", "customer", "maintenance", "quality"]
+
+[app]
+extend = "admin"
+
+[api.costing]
+prefix = "/costing"
+tags = "ERP production costing and margin"

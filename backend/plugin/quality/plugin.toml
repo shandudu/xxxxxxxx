@@ -1,0 +1,15 @@
+[plugin]
+summary = "MES quality inspections and nonconformance disposition"
+version = "0.1.0"
+description = "Incoming, process, final and retest inspections with NCR/MRB execution"
+author = "fba"
+tags = ["storage", "other"]
+database = ["mysql", "postgresql"]
+depends_on = ["material", "trace", "inventory", "supplier", "purchasing", "production"]
+
+[app]
+extend = "admin"
+
+[api.quality]
+prefix = "/quality"
+tags = "MES quality"

@@ -1,0 +1,86 @@
+{
+  "menu": "物料基础资料",
+  "categoryTree": "物料分类",
+  "allMaterials": "全部物料",
+  "detail": "物料详情",
+  "empty": {
+    "selectMaterial": "请选择物料"
+  },
+  "placeholder": {
+    "categorySearch": "搜索分类",
+    "keyword": "编码/名称/规格/型号"
+  },
+  "action": {
+    "create": "创建物料",
+    "configure": "配置物料",
+    "disable": "停用",
+    "enable": "启用",
+    "reset": "重置",
+    "cancel": "取消",
+    "save": "保存"
+  },
+  "title": {
+    "create": "创建物料",
+    "configure": "配置物料"
+  },
+  "group": {
+    "basic": "基础信息",
+    "business": "生产/采购属性",
+    "traceability": "追溯属性",
+    "quality": "质量属性",
+    "storage": "仓储属性",
+    "system": "系统信息"
+  },
+  "field": {
+    "code": "物料编码",
+    "name": "物料名称",
+    "shortName": "物料简称",
+    "type": "物料类型",
+    "category": "物料分类",
+    "unit": "基本单位",
+    "specification": "规格",
+    "model": "型号",
+    "status": "状态",
+    "purchasable": "可采购",
+    "producible": "可生产",
+    "sellable": "可销售",
+    "batchControl": "批次管理",
+    "serialControl": "序列号管理",
+    "shelfLife": "保质期（天）",
+    "qualityInspection": "需要质量检验",
+    "defaultWarehouse": "默认仓库",
+    "remark": "备注",
+    "createdTime": "创建时间",
+    "updatedTime": "更新时间"
+  },
+  "filter": {
+    "batch": "批次管理",
+    "batchYes": "批次：是",
+    "batchNo": "批次：否",
+    "businessYes": "是",
+    "businessNo": "否"
+  },
+  "common": {
+    "yes": "是",
+    "no": "否"
+  },
+  "status": {
+    "ACTIVE": "启用",
+    "DISABLED": "停用"
+  },
+  "materialType": {
+    "RAW_MATERIAL": "原材料",
+    "SEMI_FINISHED": "半成品",
+    "FINISHED_PRODUCT": "成品",
+    "AUXILIARY": "辅料",
+    "PACKAGING": "包装材料",
+    "SPARE_PART": "备品备件",
+    "CONSUMABLE": "耗材"
+  },
+  "message": {
+    "requiredBasic": "物料编码和名称不能为空",
+    "requiredReferences": "请选择物料分类和基本单位",
+    "saved": "物料已保存",
+    "statusUpdated": "物料状态已更新"
+  }
+}

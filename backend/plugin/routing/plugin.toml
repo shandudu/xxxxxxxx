@@ -1,0 +1,23 @@
+[plugin]
+summary = "MES operation, work center and routing management"
+version = "1.0.0"
+description = "Versioned manufacturing routing master data for MES/ERP"
+author = "fba"
+tags = ["other"]
+database = ["mysql", "postgresql"]
+depends_on = ["material"]
+
+[app]
+extend = "admin"
+
+[api.operation]
+prefix = "/operation"
+tags = "MES operations"
+
+[api.work_center]
+prefix = "/work-center"
+tags = "MES work centers"
+
+[api.routing]
+prefix = "/routing"
+tags = "MES routings"
