@@ -50,8 +50,11 @@ class TraceRepository:
         await db.flush()
         return item
 
-    async def get_lot(self, db: AsyncSession, lot_id: int) -> MaterialLot | None:
-        return await db.scalar(select(MaterialLot).where(MaterialLot.id == lot_id, MaterialLot.deleted == 0))
+    async def get_lot(self, db: AsyncSession, lot_id: int, lock: bool = False) -> MaterialLot | None:
+        statement = select(MaterialLot).where(MaterialLot.id == lot_id, MaterialLot.deleted == 0)
+        if lock:
+            statement = statement.with_for_update()
+        return await db.scalar(statement)
 
     async def get_lot_by_no(self, db: AsyncSession, lot_no: str) -> MaterialLot | None:
         return await db.scalar(select(MaterialLot).where(MaterialLot.lot_no == lot_no, MaterialLot.deleted == 0))

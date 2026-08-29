@@ -184,7 +184,9 @@ class RepairPartIssue(Base):
         sa.ForeignKeyConstraint(['lot_id'], ['mes_material_lot.id'], name='fk_repair_part_issue_lot'),
         sa.ForeignKeyConstraint(['warehouse_id'], ['mes_warehouse.id'], name='fk_repair_part_issue_warehouse'),
         sa.ForeignKeyConstraint(['location_id'], ['mes_location.id'], name='fk_repair_part_issue_location'),
-        sa.UniqueConstraint('idempotency_key', 'deleted', name='uk_repair_part_issue_idempotency'),
+        sa.UniqueConstraint(
+            'repair_id', 'idempotency_key', 'deleted', name='uk_repair_part_issue_idempotency'
+        ),
         sa.Index('idx_repair_part_issue_repair', 'repair_id', 'issued_at'),
         {'comment': 'MES repair spare-part issues linked to inventory transactions'},
     )

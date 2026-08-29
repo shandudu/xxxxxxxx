@@ -601,8 +601,32 @@ class MaintenanceService:
         repair = await MaintenanceService._repair(db, repair_id, lock=True)
         if repair.status not in (RepairStatus.IN_REPAIR, RepairStatus.COMPLETED):
             raise errors.ConflictError(msg='REPAIR_ORDER_NOT_ISSUEABLE')
-        existing = await db.scalar(select(RepairPartIssue).where(RepairPartIssue.idempotency_key == obj.idempotency_key, RepairPartIssue.deleted == 0))
+        posting = await db.scalar(
+            select(RepairCostPosting.id).where(
+                RepairCostPosting.repair_id == repair.id,
+                RepairCostPosting.deleted == 0,
+            )
+        )
+        if posting:
+            raise errors.ConflictError(msg='REPAIR_COST_ALREADY_POSTED')
+        existing = await db.scalar(
+            select(RepairPartIssue).where(
+                RepairPartIssue.repair_id == repair.id,
+                RepairPartIssue.idempotency_key == obj.idempotency_key,
+                RepairPartIssue.deleted == 0,
+            )
+        )
         if existing:
+            same_request = (
+                existing.material_id == obj.material_id
+                and existing.lot_id == obj.lot_id
+                and existing.warehouse_id == obj.warehouse_id
+                and existing.location_id == obj.location_id
+                and existing.quantity == obj.quantity
+                and existing.unit_cost == obj.unit_cost
+            )
+            if not same_request:
+                raise errors.ConflictError(msg='REPAIR_PART_IDEMPOTENCY_CONFLICT')
             return RepairPartIssueDetail.model_validate(existing)
         issued_at = obj.issued_at or timezone.now()
         issue = RepairPartIssue(
@@ -614,7 +638,7 @@ class MaintenanceService:
         db.add(issue)
         await db.flush()
         transaction = await inventory_service.post_transaction(
-            db, idempotency_key=f'REPAIR_PART:{obj.idempotency_key}', transaction_type=StockTransactionType.ISSUE,
+            db, idempotency_key=f'REPAIR_PART:{repair.id}:{obj.idempotency_key}', transaction_type=StockTransactionType.ISSUE,
             material_id=obj.material_id, lot_id=obj.lot_id, warehouse_id=obj.warehouse_id,
             location_id=obj.location_id, quantity_delta=-obj.quantity, reference_type='REPAIR_ORDER',
             reference_id=repair.id, reference_no=repair.repair_no, remark=obj.remark,

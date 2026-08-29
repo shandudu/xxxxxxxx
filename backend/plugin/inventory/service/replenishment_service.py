@@ -182,6 +182,7 @@ class ReplenishmentService:
         )
         if obj.material_ids:
             statement = statement.where(InventoryPolicy.material_id.in_(obj.material_ids))
+        statement = statement.with_for_update()
         policies = (await db.scalars(statement.order_by(InventoryPolicy.material_id))).all()
         result: list[ReplenishmentSuggestionDetail] = []
         evaluated_at = timezone.now()
@@ -221,20 +222,39 @@ class ReplenishmentService:
                 if material.producible
                 else ReplenishmentOrderType.PURCHASE
             )
-            existing = await db.scalar(
+            active_suggestions = list((await db.scalars(
                 select(ReplenishmentSuggestion)
                 .where(
                     ReplenishmentSuggestion.material_id == material.id,
-                    ReplenishmentSuggestion.status == ReplenishmentStatus.SUGGESTED,
+                    ReplenishmentSuggestion.status.in_(
+                        (ReplenishmentStatus.SUGGESTED, ReplenishmentStatus.FIRM)
+                    ),
                     ReplenishmentSuggestion.deleted == 0,
                 )
                 .order_by(ReplenishmentSuggestion.id.desc())
                 .with_for_update()
+            )).all())
+            firm = next(
+                (row for row in active_suggestions if row.status == ReplenishmentStatus.FIRM),
+                None,
             )
+            suggested_rows = [
+                row for row in active_suggestions if row.status == ReplenishmentStatus.SUGGESTED
+            ]
+            existing = suggested_rows[0] if suggested_rows else None
+            for duplicate in suggested_rows[1:]:
+                duplicate.status = ReplenishmentStatus.CANCELLED
             if alert == ReplenishmentAlertLevel.COVERED:
-                if existing:
-                    existing.status = ReplenishmentStatus.CANCELLED
+                for row in suggested_rows:
+                    row.status = ReplenishmentStatus.CANCELLED
+                if suggested_rows:
                     await db.flush()
+                continue
+            if firm:
+                for row in suggested_rows:
+                    row.status = ReplenishmentStatus.CANCELLED
+                await db.flush()
+                result.append(ReplenishmentSuggestionDetail.model_validate(firm))
                 continue
             values = dict(
                 material_id=material.id,

@@ -15,7 +15,9 @@ from backend.plugin.maintenance.model import (
     EquipmentDowntime,
     MaintenancePlan,
     MaintenanceTask,
+    RepairCostPosting,
     RepairOrder,
+    RepairPartIssue,
 )
 from backend.plugin.maintenance.schema.maintenance import (
     CompleteRepair,
@@ -36,6 +38,8 @@ def test_maintenance_models_and_foreign_keys_registered() -> None:
     assert MaintenancePlan.__tablename__ == 'mes_maintenance_plan'
     assert MaintenanceTask.__tablename__ == 'mes_maintenance_task'
     assert RepairOrder.__tablename__ == 'mes_repair_order'
+    assert RepairPartIssue.__tablename__ == 'mes_repair_part_issue'
+    assert RepairCostPosting.__tablename__ == 'mes_repair_cost_posting'
     assert EquipmentDowntime.__tablename__ == 'mes_equipment_downtime'
 
     constraints = {
@@ -70,8 +74,11 @@ def test_maintenance_route_surface() -> None:
     assert ('/tasks/{task_id}/complete', frozenset({'POST'})) in endpoints
     assert ('/repairs/{repair_id}/assign', frozenset({'POST'})) in endpoints
     assert ('/repairs/{repair_id}/complete', frozenset({'POST'})) in endpoints
+    assert ('/repairs/{repair_id}/parts', frozenset({'POST'})) in endpoints
+    assert ('/repairs/{repair_id}/cost/post', frozenset({'POST'})) in endpoints
+    assert ('/repairs/cost-analysis', frozenset({'GET'})) in endpoints
     assert ('/downtimes/{downtime_id}/close', frozenset({'POST'})) in endpoints
-    assert len(router.routes) == 17
+    assert len(router.routes) == 21
 
 
 def test_plan_schema_normalizes_code_and_checklist() -> None:

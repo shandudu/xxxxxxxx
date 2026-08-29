@@ -62,8 +62,10 @@ class TraceService:
         return unit
 
     @staticmethod
-    async def _require_lot(db: AsyncSession, lot_id: int, *, active_only: bool = False) -> MaterialLot:
-        lot = await trace_repo.get_lot(db, lot_id)
+    async def _require_lot(
+        db: AsyncSession, lot_id: int, *, active_only: bool = False, lock: bool = False
+    ) -> MaterialLot:
+        lot = await trace_repo.get_lot(db, lot_id, lock=lock)
         if lot is None:
             raise errors.NotFoundError(msg='LOT_NOT_FOUND')
         if active_only and lot.status != LotStatus.ACTIVE:
@@ -423,11 +425,26 @@ class TraceService:
         }
 
     async def split_lot(self, db: AsyncSession, lot_id: int, obj: LotSplitParam) -> list[dict[str, Any]]:
-        source = await self._require_lot(db, lot_id, active_only=True)
+        source = await self._require_lot(db, lot_id, active_only=True, lock=True)
         if source.quantity is None:
             raise errors.ConflictError(msg='LOT_SPLIT_QUANTITY_INVALID')
+        outgoing = await trace_repo.outgoing_relations(db, TraceObjectType.LOT, source.id)
+        allocated = sum(
+            (
+                relation.quantity or Decimal('0')
+                for relation in outgoing
+                if relation.relation_type
+                in (
+                    TraceRelationType.CONSUMED_TO,
+                    TraceRelationType.SPLIT_TO,
+                    TraceRelationType.MERGED_TO,
+                    TraceRelationType.REWORK_TO,
+                )
+            ),
+            Decimal('0'),
+        )
         children_total = sum((child.quantity for child in obj.children), Decimal('0'))
-        if children_total > source.quantity:
+        if allocated + children_total > source.quantity:
             raise errors.ConflictError(msg='LOT_SPLIT_QUANTITY_INVALID')
         for child in obj.children:
             if await trace_repo.get_lot_by_no(db, child.lot_no):
@@ -472,6 +489,8 @@ class TraceService:
                     business_ref_no=source.lot_no,
                 ),
             )
+        if allocated + children_total == source.quantity:
+            source.status = LotStatus.CLOSED
         materials, units = await self._lot_related_maps(db, children)
         result = [self._lot_item(item, materials, units, detail=True) for item in children]
         await self._audit(
@@ -485,7 +504,10 @@ class TraceService:
         return result
 
     async def merge_lots(self, db: AsyncSession, obj: LotMergeParam) -> dict[str, Any]:
-        sources = [await self._require_lot(db, lot_id, active_only=True) for lot_id in obj.source_lot_ids]
+        sources = [
+            await self._require_lot(db, lot_id, active_only=True, lock=True)
+            for lot_id in sorted(obj.source_lot_ids)
+        ]
         material_ids = {lot.material_id for lot in sources}
         if len(material_ids) != 1 or obj.target_lot.material_id not in material_ids:
             raise errors.ConflictError(msg='LOT_MERGE_MATERIAL_MISMATCH')
@@ -496,6 +518,34 @@ class TraceService:
             raise errors.ConflictError(msg='MATERIAL_BATCH_CONTROL_DISABLED')
         unit_id = obj.target_lot.unit_id or material.base_unit_id
         await self._require_unit(db, unit_id)
+        available_by_source: dict[int, Decimal] = {}
+        for source in sources:
+            if source.quantity is None:
+                raise errors.ConflictError(msg='LOT_MERGE_QUANTITY_INVALID')
+            if (source.unit_id or material.base_unit_id) != unit_id:
+                raise errors.ConflictError(msg='LOT_MERGE_UNIT_MISMATCH')
+            outgoing = await trace_repo.outgoing_relations(db, TraceObjectType.LOT, source.id)
+            allocated = sum(
+                (
+                    relation.quantity or Decimal('0')
+                    for relation in outgoing
+                    if relation.relation_type
+                    in (
+                        TraceRelationType.CONSUMED_TO,
+                        TraceRelationType.SPLIT_TO,
+                        TraceRelationType.MERGED_TO,
+                        TraceRelationType.REWORK_TO,
+                    )
+                ),
+                Decimal('0'),
+            )
+            available = source.quantity - allocated
+            if available <= 0:
+                raise errors.ConflictError(msg='LOT_MERGE_SOURCE_EXHAUSTED')
+            available_by_source[source.id] = available
+        target_quantity = sum(available_by_source.values(), Decimal('0'))
+        if obj.target_lot.quantity is not None and obj.target_lot.quantity != target_quantity:
+            raise errors.ConflictError(msg='LOT_MERGE_QUANTITY_MISMATCH')
         expiry_date = obj.target_lot.expiry_date
         if expiry_date is None and obj.target_lot.production_date and material.shelf_life_days is not None:
             expiry_date = obj.target_lot.production_date + timedelta(days=material.shelf_life_days)
@@ -508,7 +558,7 @@ class TraceService:
                 'source_type': LotSourceType.LOT_MERGE,
                 'production_date': obj.target_lot.production_date,
                 'expiry_date': expiry_date,
-                'quantity': obj.target_lot.quantity,
+                'quantity': target_quantity,
                 'unit_id': unit_id,
                 'quality_status': obj.target_lot.quality_status,
                 'remark': obj.target_lot.remark,
@@ -525,13 +575,14 @@ class TraceService:
                     target.id,
                     target.lot_no,
                     TraceRelationType.MERGED_TO,
-                    quantity=source.quantity,
+                    quantity=available_by_source[source.id],
                     unit_id=source.unit_id,
                     business_ref_type=LotSourceType.LOT_MERGE,
                     business_ref_id=target.id,
                     business_ref_no=target.lot_no,
                 ),
             )
+            source.status = LotStatus.CLOSED
         result = await self.get_lot(db, target.id)
         await self._audit(
             db,

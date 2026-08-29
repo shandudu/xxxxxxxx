@@ -489,10 +489,19 @@ class QualityService:
 
     @staticmethod
     async def create_ncr(db: AsyncSession, obj: CreateNcr) -> NonconformanceReport:
-        inspection = await QualityService.get_inspection(db, obj.inspection_id)
+        inspection = await QualityService.get_inspection(db, obj.inspection_id, lock=True)
         if inspection.status != InspectionStatus.COMPLETED or inspection.result == InspectionResult.PASS:
             raise errors.ConflictError(msg='INSPECTION_HAS_NO_NONCONFORMANCE')
-        if obj.nonconforming_quantity > inspection.rejected_quantity:
+        allocated = Decimal(
+            await db.scalar(
+                select(func.coalesce(func.sum(NonconformanceReport.nonconforming_quantity), 0)).where(
+                    NonconformanceReport.inspection_id == inspection.id,
+                    NonconformanceReport.deleted == 0,
+                )
+            )
+            or 0
+        )
+        if allocated + obj.nonconforming_quantity > inspection.rejected_quantity:
             raise errors.ConflictError(msg='NCR_QUANTITY_EXCEEDS_REJECTED')
         number = (obj.ncr_no or f'NCR-{timezone.now():%Y%m%d%H%M%S}-{uuid4().hex[:6]}').upper()
         ncr = NonconformanceReport(

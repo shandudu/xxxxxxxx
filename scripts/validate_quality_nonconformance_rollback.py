@@ -8,6 +8,7 @@ from decimal import Decimal
 
 from sqlalchemy import select
 
+from backend.common.exception import errors
 from backend.database.db import async_db_session
 from backend.plugin.demo.service.demo_service import REFERENCES, SALES_ORDER_DRIVEN_REFERENCES, demo_service
 from backend.plugin.quality.enums import DispositionType, InspectionResult, ReworkStatus
@@ -68,6 +69,21 @@ async def validate(commit: bool) -> None:
                         defect_description='rollback test defect',
                     ),
                 )
+                try:
+                    await quality_service.create_ncr(
+                        db,
+                        CreateNcr(
+                            ncr_no='QA-ROLLBACK-NCR-OVERFLOW',
+                            inspection_id=inspection.id,
+                            nonconforming_quantity=Decimal('1'),
+                            defect_description='must exceed cumulative rejected quantity',
+                        ),
+                    )
+                except errors.ConflictError as exc:
+                    if exc.msg != 'NCR_QUANTITY_EXCEEDS_REJECTED':
+                        raise
+                else:
+                    raise RuntimeError('cumulative NCR quantity overflow was accepted')
                 disposition = await quality_service.create_disposition(
                     db,
                     CreateDisposition(

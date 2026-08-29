@@ -53,6 +53,11 @@ async def validate(commit: bool) -> None:
                 if not suggestions or suggestions[0].alert_level == ReplenishmentAlertLevel.COVERED:
                     raise RuntimeError('replenishment suggestion missing')
                 firmed = await replenishment_service.firm(db, suggestions[0].id)
+                regenerated = await replenishment_service.generate(
+                    db, GenerateReplenishment(material_ids=[material.id])
+                )
+                if len(regenerated) != 1 or regenerated[0].id != firmed.id:
+                    raise RuntimeError('firm replenishment was duplicated during regeneration')
                 released = await replenishment_service.release(
                     db,
                     firmed.id,
