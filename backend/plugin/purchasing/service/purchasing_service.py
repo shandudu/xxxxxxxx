@@ -96,6 +96,9 @@ class PurchasingService:
         lines: list[PurchaseOrderLine] = []
         for line_no, item in enumerate(obj.lines, start=1):
             material, unit = await PurchasingService._material_and_unit(db, item.material_id)
+            from backend.plugin.supplier.service.lifecycle_service import supplier_lifecycle_service
+
+            await supplier_lifecycle_service.ensure_supplier_material_approved(db, supplier.id, material.id)
             line = PurchaseOrderLine(
                 purchase_order_id=order.id, line_no=line_no, material_id=material.id, unit_id=unit.id,
                 ordered_quantity=item.ordered_quantity, unit_price=item.unit_price,
@@ -124,6 +127,11 @@ class PurchasingService:
             return await PurchasingService.get_order(db, order.id)
         if order.status != PurchaseOrderStatus.DRAFT:
             raise errors.ConflictError(msg='PURCHASE_ORDER_NOT_DRAFT')
+        await PurchasingService._require_supplier(db, order.supplier_id)
+        from backend.plugin.supplier.service.lifecycle_service import supplier_lifecycle_service
+
+        for line in await purchasing_repo.order_lines(db, order.id, lock=True):
+            await supplier_lifecycle_service.ensure_supplier_material_approved(db, order.supplier_id, line.material_id)
         order.status = PurchaseOrderStatus.CONFIRMED
         if obj and obj.supplier_confirmed_delivery_at:
             for line in await purchasing_repo.order_lines(db, order.id, lock=True):

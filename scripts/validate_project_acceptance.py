@@ -23,6 +23,7 @@ CHECKS: tuple[tuple[str, ...], ...] = (
     ('scripts/validate_sales_delivery_otif_rollback.py',),
     ('scripts/validate_supplier_purchase_otif_rollback.py',),
     ('scripts/validate_supplier_quality_management_rollback.py',),
+    ('scripts/validate_supplier_lifecycle_rollback.py',),
     ('scripts/validate_inventory_replenishment_rollback.py',),
     ('scripts/validate_shelf_life_fefo_recall_rollback.py',),
     ('scripts/validate_trace_lot_conservation_rollback.py',),

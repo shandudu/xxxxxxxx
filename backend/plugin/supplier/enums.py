@@ -58,3 +58,66 @@ class SupplierMaterialStatus(StrEnum):
     ACTIVE = 'ACTIVE'
     SUSPENDED = 'SUSPENDED'
     DISABLED = 'DISABLED'
+
+
+class SupplierQualificationStatus(StrEnum):
+    DRAFT = 'DRAFT'
+    SUBMITTED = 'SUBMITTED'
+    UNDER_REVIEW = 'UNDER_REVIEW'
+    APPROVED = 'APPROVED'
+    REJECTED = 'REJECTED'
+    SUSPENDED = 'SUSPENDED'
+    REMOVED = 'REMOVED'
+
+
+class SupplierAuditType(StrEnum):
+    INITIAL = 'INITIAL'
+    PERIODIC = 'PERIODIC'
+    SPECIAL = 'SPECIAL'
+
+
+class SupplierAuditStatus(StrEnum):
+    PLANNED = 'PLANNED'
+    COMPLETED = 'COMPLETED'
+    CANCELLED = 'CANCELLED'
+
+
+class SupplierAuditResult(StrEnum):
+    PASS = 'PASS'
+    CONDITIONAL = 'CONDITIONAL'
+    FAIL = 'FAIL'
+
+
+class SupplierSampleStatus(StrEnum):
+    PENDING = 'PENDING'
+    TESTING = 'TESTING'
+    APPROVED = 'APPROVED'
+    REJECTED = 'REJECTED'
+
+
+class SupplierPpapStatus(StrEnum):
+    DRAFT = 'DRAFT'
+    SUBMITTED = 'SUBMITTED'
+    APPROVED = 'APPROVED'
+    REJECTED = 'REJECTED'
+    EXPIRED = 'EXPIRED'
+
+
+class SupplierAvlStatus(StrEnum):
+    APPROVED = 'APPROVED'
+    CONDITIONAL = 'CONDITIONAL'
+    SUSPENDED = 'SUSPENDED'
+    REMOVED = 'REMOVED'
+
+
+class SupplierReviewStatus(StrEnum):
+    PLANNED = 'PLANNED'
+    COMPLETED = 'COMPLETED'
+    CANCELLED = 'CANCELLED'
+
+
+class SupplierReviewDecision(StrEnum):
+    CONTINUE = 'CONTINUE'
+    CONDITIONAL = 'CONDITIONAL'
+    SUSPEND = 'SUSPEND'
+    REMOVE = 'REMOVE'

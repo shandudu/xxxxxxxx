@@ -5,5 +5,17 @@ from backend.plugin.supplier.model.supplier import (
     SupplierMaterial,
     SupplierOperationLog,
 )
+from backend.plugin.supplier.model.lifecycle import (
+    SupplierApprovedMaterial,
+    SupplierPeriodicReview,
+    SupplierPpapSubmission,
+    SupplierQualificationApplication,
+    SupplierQualificationAudit,
+    SupplierSampleApproval,
+)
 
-__all__ = ['Supplier', 'SupplierCategory', 'SupplierContact', 'SupplierMaterial', 'SupplierOperationLog']
+__all__ = [
+    'Supplier', 'SupplierCategory', 'SupplierContact', 'SupplierMaterial', 'SupplierOperationLog',
+    'SupplierApprovedMaterial', 'SupplierPeriodicReview', 'SupplierPpapSubmission',
+    'SupplierQualificationApplication', 'SupplierQualificationAudit', 'SupplierSampleApproval',
+]

@@ -12,6 +12,15 @@ const routes: RouteRecordRaw[] = [
       icon: 'mdi:truck-delivery-outline',
     },
   },
+  {
+    name: 'ErpSupplierLifecycle',
+    path: '/erp/supplier/lifecycle',
+    component: () => import('../views/lifecycle.vue'),
+    meta: {
+      title: '供应商准入与 AVL',
+      icon: 'mdi:clipboard-check-outline',
+    },
+  },
 ];
 
 export default routes;

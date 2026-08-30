@@ -51,6 +51,12 @@ REQUIRED_COLUMNS = {
     'mes_supplier_corrective_action': {'supplier_id', 'ncr_id', 'disposition_id', 'reinspection_id', 'status'},
     'mes_supplier_quality_policy': {'supplier_id', 'quality_weight', 'delivery_weight', 'conditional_score'},
     'mes_supplier_quality_assessment': {'supplier_id', 'grade', 'overall_score', 'procurement_decision'},
+    'erp_supplier_qualification_application': {'supplier_id', 'status', 'valid_until'},
+    'erp_supplier_qualification_audit': {'application_id', 'score', 'result'},
+    'erp_supplier_sample_approval': {'application_id', 'material_id', 'status'},
+    'erp_supplier_ppap_submission': {'supplier_id', 'material_id', 'status', 'expires_at'},
+    'erp_supplier_approved_material': {'supplier_id', 'material_id', 'status', 'next_review_at'},
+    'erp_supplier_periodic_review': {'supplier_id', 'avl_id', 'decision'},
 }
 TABLE_PATTERN = re.compile(r"__tablename__\s*=\s*['\"]([^'\"]+)['\"]")
 ENV_PATTERN = re.compile(r"^([A-Z0-9_]+)\s*=\s*['\"]?([^'\"\r\n]*)['\"]?\s*$")

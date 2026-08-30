@@ -205,3 +205,184 @@ export function updateSupplierMaterialApi(relationId: number, data: SupplierMate
 export function updateSupplierMaterialStatusApi(relationId: number, status: SupplierMaterialStatus) {
   return requestClient.put<SupplierMaterial>(`${baseUrl}/materials/${relationId}/status`, { status });
 }
+
+export interface SupplierLifecycleDashboard {
+  draft_applications: number;
+  pending_applications: number;
+  audits_pending: number;
+  samples_pending: number;
+  ppaps_pending: number;
+  active_avl_entries: number;
+  avl_expiring_soon: number;
+  reviews_due: number;
+  suspended_or_removed: number;
+}
+
+export interface QualificationApplication {
+  id: number;
+  application_no: string;
+  supplier_id: number;
+  requested_scope: string;
+  status: string;
+  qualification_level?: string;
+  submitted_at?: string;
+  decision_notes?: string;
+  valid_until?: string;
+  next_review_at?: string;
+  certificate_manifest?: Record<string, unknown>;
+  remark?: string;
+  created_time: string;
+}
+
+export interface SupplierAudit {
+  id: number;
+  audit_no: string;
+  application_id: number;
+  supplier_id: number;
+  audit_type: string;
+  planned_at: string;
+  status: string;
+  score?: number;
+  result?: string;
+  findings?: string;
+}
+
+export interface SupplierSampleApproval {
+  id: number;
+  sample_no: string;
+  application_id: number;
+  supplier_id: number;
+  material_id: number;
+  round_no: number;
+  submitted_quantity: number;
+  status: string;
+  inspection_id?: number;
+  decision_notes?: string;
+}
+
+export interface SupplierPpap {
+  id: number;
+  ppap_no: string;
+  application_id: number;
+  supplier_id: number;
+  material_id: number;
+  level: number;
+  version: string;
+  status: string;
+  sample_approval_id?: number;
+  expires_at?: string;
+  decision_notes?: string;
+}
+
+export interface SupplierAvlEntry {
+  id: number;
+  supplier_id: number;
+  material_id: number;
+  supplier_material_id: number;
+  qualification_id: number;
+  ppap_id: number;
+  status: string;
+  valid_from?: string;
+  valid_until?: string;
+  next_review_at?: string;
+  restrictions?: string;
+}
+
+export interface SupplierPeriodicReview {
+  id: number;
+  review_no: string;
+  supplier_id: number;
+  avl_id: number;
+  planned_at: string;
+  status: string;
+  score_snapshot?: number;
+  decision?: string;
+  next_review_at?: string;
+  notes?: string;
+}
+
+const lifecycleUrl = `${baseUrl}/lifecycle`;
+
+export function getSupplierLifecycleDashboardApi() {
+  return requestClient.get<SupplierLifecycleDashboard>(`${lifecycleUrl}/dashboard`);
+}
+
+export function getQualificationApplicationsApi(params?: Recordable<any>) {
+  return requestClient.get<QualificationApplication[]>(`${lifecycleUrl}/applications`, { params });
+}
+
+export function createQualificationApplicationApi(data: Recordable<any>) {
+  return requestClient.post<QualificationApplication>(`${lifecycleUrl}/applications`, data);
+}
+
+export function submitQualificationApplicationApi(id: number) {
+  return requestClient.post<QualificationApplication>(`${lifecycleUrl}/applications/${id}/submit`);
+}
+
+export function approveQualificationApplicationApi(id: number, data: Recordable<any>) {
+  return requestClient.post<QualificationApplication>(`${lifecycleUrl}/applications/${id}/approve`, data);
+}
+
+export function rejectQualificationApplicationApi(id: number, data: Recordable<any>) {
+  return requestClient.post<QualificationApplication>(`${lifecycleUrl}/applications/${id}/reject`, data);
+}
+
+export function getQualificationAuditsApi(params?: Recordable<any>) {
+  return requestClient.get<SupplierAudit[]>(`${lifecycleUrl}/audits`, { params });
+}
+
+export function createQualificationAuditApi(applicationId: number, data: Recordable<any>) {
+  return requestClient.post<SupplierAudit>(`${lifecycleUrl}/applications/${applicationId}/audits`, data);
+}
+
+export function completeQualificationAuditApi(id: number, data: Recordable<any>) {
+  return requestClient.post<SupplierAudit>(`${lifecycleUrl}/audits/${id}/complete`, data);
+}
+
+export function getSampleApprovalsApi(params?: Recordable<any>) {
+  return requestClient.get<SupplierSampleApproval[]>(`${lifecycleUrl}/samples`, { params });
+}
+
+export function createSampleApprovalApi(applicationId: number, data: Recordable<any>) {
+  return requestClient.post<SupplierSampleApproval>(`${lifecycleUrl}/applications/${applicationId}/samples`, data);
+}
+
+export function decideSampleApprovalApi(id: number, data: Recordable<any>) {
+  return requestClient.post<SupplierSampleApproval>(`${lifecycleUrl}/samples/${id}/decision`, data);
+}
+
+export function getSupplierPpapsApi(params?: Recordable<any>) {
+  return requestClient.get<SupplierPpap[]>(`${lifecycleUrl}/ppaps`, { params });
+}
+
+export function createSupplierPpapApi(applicationId: number, data: Recordable<any>) {
+  return requestClient.post<SupplierPpap>(`${lifecycleUrl}/applications/${applicationId}/ppaps`, data);
+}
+
+export function submitSupplierPpapApi(id: number) {
+  return requestClient.post<SupplierPpap>(`${lifecycleUrl}/ppaps/${id}/submit`);
+}
+
+export function decideSupplierPpapApi(id: number, data: Recordable<any>) {
+  return requestClient.post<SupplierPpap>(`${lifecycleUrl}/ppaps/${id}/decision`, data);
+}
+
+export function getSupplierAvlApi(params?: Recordable<any>) {
+  return requestClient.get<SupplierAvlEntry[]>(`${lifecycleUrl}/avl`, { params });
+}
+
+export function getSupplierPeriodicReviewsApi(params?: Recordable<any>) {
+  return requestClient.get<SupplierPeriodicReview[]>(`${lifecycleUrl}/reviews`, { params });
+}
+
+export function createSupplierPeriodicReviewApi(avlId: number, data: Recordable<any> = {}) {
+  return requestClient.post<SupplierPeriodicReview>(`${lifecycleUrl}/avl/${avlId}/reviews`, data);
+}
+
+export function generateDueSupplierReviewsApi() {
+  return requestClient.post<SupplierPeriodicReview[]>(`${lifecycleUrl}/reviews/generate-due`);
+}
+
+export function completeSupplierPeriodicReviewApi(id: number, data: Recordable<any>) {
+  return requestClient.post<SupplierPeriodicReview>(`${lifecycleUrl}/reviews/${id}/complete`, data);
+}
