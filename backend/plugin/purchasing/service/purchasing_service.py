@@ -47,6 +47,9 @@ class PurchasingService:
             raise errors.NotFoundError(msg='SUPPLIER_NOT_FOUND')
         if supplier.status != SupplierStatus.ACTIVE or supplier.cooperation_status != CooperationStatus.NORMAL or not supplier.purchasing_enabled:
             raise errors.ConflictError(msg='SUPPLIER_NOT_PURCHASABLE')
+        from backend.plugin.quality.service.sqm_service import sqm_service
+
+        await sqm_service.ensure_supplier_purchasable(db, supplier.id)
         return supplier
 
     @staticmethod

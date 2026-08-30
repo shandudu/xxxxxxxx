@@ -23,8 +23,18 @@ from backend.plugin.quality.schema.quality_standard import (
     SetQualityConfigStatus,
     SubmitQualityResults,
 )
+from backend.plugin.quality.schema.sqm import (
+    IssueSupplierCorrectiveAction,
+    RespondSupplierCorrectiveAction,
+    SupplierCorrectiveActionDetail,
+    SupplierQualityAssessmentDetail,
+    SupplierQualityDashboard,
+    SupplierQualityPolicyDetail,
+    SupplierQualityPolicyUpsert,
+    VerifySupplierCorrectiveAction,
+)
 from backend.plugin.quality.enums import InspectionTemplateStatus
-from backend.plugin.quality.service import quality_service, quality_standard_service
+from backend.plugin.quality.service import quality_service, quality_standard_service, sqm_service
 
 router = APIRouter()
 view_dependencies = [DependsJwtAuth, Depends(RequestPermission('mes:quality:view')), DependsRBAC]
@@ -63,6 +73,95 @@ async def close_sla_alert(db: CurrentSessionTransaction, alert_id: Annotated[int
 @router.get('/supplier-scorecard', dependencies=view_dependencies)
 async def get_supplier_scorecard(db: CurrentSession) -> ResponseSchemaModel[list[SupplierQualityScorecard]]:
     return response_base.success(data=await quality_service.supplier_scorecard(db))
+
+
+@router.get('/sqm/dashboard', dependencies=[Depends(RequestPermission('mes:quality:sqm:view')), DependsRBAC])
+async def get_sqm_dashboard(db: CurrentSession) -> ResponseSchemaModel[SupplierQualityDashboard]:
+    return response_base.success(data=await sqm_service.dashboard(db))
+
+
+@router.get('/sqm/scars', dependencies=[Depends(RequestPermission('mes:quality:sqm:view')), DependsRBAC])
+async def list_supplier_scars(
+    db: CurrentSession,
+    supplier_id: Annotated[int | None, Query(ge=1)] = None,
+    status: Annotated[str | None, Query(max_length=30)] = None,
+) -> ResponseSchemaModel[list[SupplierCorrectiveActionDetail]]:
+    return response_base.success(data=await sqm_service.list_scars(db, supplier_id, status))
+
+
+@router.post('/sqm/scars/{scar_id}/issue', dependencies=[Depends(RequestPermission('mes:quality:sqm:scar')), DependsRBAC])
+async def issue_supplier_scar(
+    db: CurrentSessionTransaction,
+    scar_id: Annotated[int, Path(ge=1)],
+    obj: IssueSupplierCorrectiveAction,
+) -> ResponseSchemaModel[SupplierCorrectiveActionDetail]:
+    return response_base.success(data=await sqm_service.issue_scar(db, scar_id, obj))
+
+
+@router.post('/sqm/scars/{scar_id}/respond', dependencies=[Depends(RequestPermission('mes:quality:sqm:scar')), DependsRBAC])
+async def respond_supplier_scar(
+    db: CurrentSessionTransaction,
+    scar_id: Annotated[int, Path(ge=1)],
+    obj: RespondSupplierCorrectiveAction,
+) -> ResponseSchemaModel[SupplierCorrectiveActionDetail]:
+    return response_base.success(data=await sqm_service.respond_scar(db, scar_id, obj))
+
+
+@router.post('/sqm/scars/{scar_id}/reinspect', dependencies=[Depends(RequestPermission('mes:quality:sqm:verify')), DependsRBAC])
+async def reinspect_supplier_scar(
+    db: CurrentSessionTransaction,
+    scar_id: Annotated[int, Path(ge=1)],
+) -> ResponseSchemaModel[SupplierCorrectiveActionDetail]:
+    return response_base.success(data=await sqm_service.create_reinspection(db, scar_id))
+
+
+@router.post('/sqm/scars/{scar_id}/verify', dependencies=[Depends(RequestPermission('mes:quality:sqm:verify')), DependsRBAC])
+async def verify_supplier_scar(
+    db: CurrentSessionTransaction,
+    scar_id: Annotated[int, Path(ge=1)],
+    obj: VerifySupplierCorrectiveAction,
+) -> ResponseSchemaModel[SupplierCorrectiveActionDetail]:
+    return response_base.success(data=await sqm_service.verify_scar(db, scar_id, obj))
+
+
+@router.get('/sqm/policies', dependencies=[Depends(RequestPermission('mes:quality:sqm:view')), DependsRBAC])
+async def list_supplier_quality_policies(
+    db: CurrentSession,
+) -> ResponseSchemaModel[list[SupplierQualityPolicyDetail]]:
+    return response_base.success(data=await sqm_service.list_policies(db))
+
+
+@router.put('/sqm/policies/{supplier_id}', dependencies=[Depends(RequestPermission('mes:quality:sqm:policy')), DependsRBAC])
+async def upsert_supplier_quality_policy(
+    db: CurrentSessionTransaction,
+    supplier_id: Annotated[int, Path(ge=1)],
+    obj: SupplierQualityPolicyUpsert,
+) -> ResponseSchemaModel[SupplierQualityPolicyDetail]:
+    return response_base.success(data=await sqm_service.upsert_policy(db, supplier_id, obj))
+
+
+@router.get('/sqm/assessments', dependencies=[Depends(RequestPermission('mes:quality:sqm:view')), DependsRBAC])
+async def list_supplier_quality_assessments(
+    db: CurrentSession,
+    supplier_id: Annotated[int | None, Query(ge=1)] = None,
+    limit: Annotated[int, Query(ge=1, le=1000)] = 200,
+) -> ResponseSchemaModel[list[SupplierQualityAssessmentDetail]]:
+    return response_base.success(data=await sqm_service.list_assessments(db, supplier_id, limit))
+
+
+@router.post('/sqm/assessments/{supplier_id}/recalculate', dependencies=[Depends(RequestPermission('mes:quality:sqm:policy')), DependsRBAC])
+async def assess_supplier_quality(
+    db: CurrentSessionTransaction,
+    supplier_id: Annotated[int, Path(ge=1)],
+) -> ResponseSchemaModel[SupplierQualityAssessmentDetail]:
+    return response_base.success(data=await sqm_service.assess_supplier(db, supplier_id))
+
+
+@router.post('/sqm/assessments/recalculate-all', dependencies=[Depends(RequestPermission('mes:quality:sqm:policy')), DependsRBAC])
+async def assess_all_supplier_quality(
+    db: CurrentSessionTransaction,
+) -> ResponseSchemaModel[list[SupplierQualityAssessmentDetail]]:
+    return response_base.success(data=await sqm_service.assess_all(db))
 
 
 class CloseNcrParam(SchemaBase):

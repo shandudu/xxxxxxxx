@@ -5,9 +5,10 @@ from pydantic import ValidationError
 
 from backend.plugin.quality.api.v1.mes.quality import router
 from backend.plugin.quality.enums import DispositionType, InspectionResult, InspectionType, ReworkStatus
-from backend.plugin.quality.model import CustomerAfterSalesAudit, CustomerAfterSalesOrder, CustomerAfterSalesRepairTask, CustomerComplaint, CustomerReturn, CustomerReturnLine, NonconformanceDisposition, NonconformanceReport, QualityCapa, QualityCapaAction, QualityCapaVerification, QualityInspection, QualityInspectionItem, QualityInspectionResultLine, QualityInspectionStandard, QualityInspectionTemplate, QualityReworkOrder, QualitySamplingPlan
+from backend.plugin.quality.model import CustomerAfterSalesAudit, CustomerAfterSalesOrder, CustomerAfterSalesRepairTask, CustomerComplaint, CustomerReturn, CustomerReturnLine, NonconformanceDisposition, NonconformanceReport, QualityCapa, QualityCapaAction, QualityCapaVerification, QualityInspection, QualityInspectionItem, QualityInspectionResultLine, QualityInspectionStandard, QualityInspectionTemplate, QualityReworkOrder, QualitySamplingPlan, SupplierCorrectiveAction, SupplierQualityAssessment, SupplierQualityPolicy
 from backend.plugin.quality.schema.quality_standard import CreateQualitySamplingPlan
 from backend.plugin.quality.schema.quality import CompleteInspection, CreateDisposition, CreateInspection
+from backend.plugin.quality.schema.sqm import SupplierQualityPolicyUpsert
 from backend.plugin.quality.service.quality_service import QualityService, incoming_sample_quantity
 
 
@@ -30,7 +31,10 @@ def test_quality_models_and_routes() -> None:
     assert CustomerAfterSalesOrder.__tablename__ == 'erp_customer_after_sales_order'
     assert CustomerAfterSalesRepairTask.__tablename__ == 'erp_customer_after_sales_repair_task'
     assert CustomerAfterSalesAudit.__tablename__ == 'erp_customer_after_sales_audit'
-    assert len(router.routes) == 60
+    assert SupplierCorrectiveAction.__tablename__ == 'mes_supplier_corrective_action'
+    assert SupplierQualityPolicy.__tablename__ == 'mes_supplier_quality_policy'
+    assert SupplierQualityAssessment.__tablename__ == 'mes_supplier_quality_assessment'
+    assert len(router.routes) == 71
     assert '/supplier-scorecard' in {route.path for route in router.routes}
     assert '/dispositions/{disposition_id}/execute' in {route.path for route in router.routes}
     assert '/rework-orders' in {route.path for route in router.routes}
@@ -47,6 +51,8 @@ def test_quality_models_and_routes() -> None:
     assert '/inspections/{inspection_id}/results' in {route.path for route in router.routes}
     assert '/operation-dashboard' in {route.path for route in router.routes}
     assert '/sla-alerts/{alert_id}/escalate' in {route.path for route in router.routes}
+    assert '/sqm/scars/{scar_id}/verify' in {route.path for route in router.routes}
+    assert '/sqm/assessments/{supplier_id}/recalculate' in {route.path for route in router.routes}
 
 
 def test_quality_schemas() -> None:
@@ -81,3 +87,12 @@ def test_incoming_sample_quantity_rejects_invalid_inputs() -> None:
 def test_quality_service_exposes_receipt_and_finished_lot_hooks() -> None:
     assert callable(QualityService.create_incoming_inspection)
     assert callable(QualityService.create_final_inspection)
+
+
+def test_supplier_quality_policy_validates_thresholds_and_weights() -> None:
+    policy = SupplierQualityPolicyUpsert()
+    assert policy.quality_weight + policy.delivery_weight == Decimal('100')
+    with pytest.raises(ValidationError):
+        SupplierQualityPolicyUpsert(conditional_score=90, qualified_score=85)
+    with pytest.raises(ValidationError):
+        SupplierQualityPolicyUpsert(quality_weight=80, delivery_weight=30)

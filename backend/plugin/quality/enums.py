@@ -20,6 +20,41 @@ class InspectionResult(StrEnum):
     PARTIAL = 'PARTIAL'
 
 
+class SupplierCorrectiveActionStatus(StrEnum):
+    DRAFT = 'DRAFT'
+    ISSUED = 'ISSUED'
+    RESPONDED = 'RESPONDED'
+    RETEST_PENDING = 'RETEST_PENDING'
+    CLOSED = 'CLOSED'
+    REJECTED = 'REJECTED'
+    CANCELLED = 'CANCELLED'
+
+
+class SupplierCorrectiveVerificationResult(StrEnum):
+    PASS = 'PASS'
+    FAIL = 'FAIL'
+
+
+class SupplierProcurementDecision(StrEnum):
+    APPROVED = 'APPROVED'
+    CONDITIONAL = 'CONDITIONAL'
+    SUSPENDED = 'SUSPENDED'
+    PENDING = 'PENDING'
+
+
+class SupplierQualityGrade(StrEnum):
+    A = 'A'
+    B = 'B'
+    C = 'C'
+    D = 'D'
+    UNRATED = 'UNRATED'
+
+
+class SupplierQualityPolicyStatus(StrEnum):
+    ACTIVE = 'ACTIVE'
+    INACTIVE = 'INACTIVE'
+
+
 class NcrStatus(StrEnum):
     OPEN = 'OPEN'
     UNDER_REVIEW = 'UNDER_REVIEW'

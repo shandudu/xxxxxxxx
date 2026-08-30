@@ -48,6 +48,9 @@ REQUIRED_COLUMNS = {
     'mes_shelf_life_policy': {'material_id', 'warning_days', 'critical_days', 'min_remaining_days_at_issue'},
     'mes_lot_quality_hold': {'lot_id', 'reason', 'status', 'inspection_id'},
     'mes_lot_recall_item': {'recall_id', 'item_type', 'status', 'shipment_line_id'},
+    'mes_supplier_corrective_action': {'supplier_id', 'ncr_id', 'disposition_id', 'reinspection_id', 'status'},
+    'mes_supplier_quality_policy': {'supplier_id', 'quality_weight', 'delivery_weight', 'conditional_score'},
+    'mes_supplier_quality_assessment': {'supplier_id', 'grade', 'overall_score', 'procurement_decision'},
 }
 TABLE_PATTERN = re.compile(r"__tablename__\s*=\s*['\"]([^'\"]+)['\"]")
 ENV_PATTERN = re.compile(r"^([A-Z0-9_]+)\s*=\s*['\"]?([^'\"\r\n]*)['\"]?\s*$")

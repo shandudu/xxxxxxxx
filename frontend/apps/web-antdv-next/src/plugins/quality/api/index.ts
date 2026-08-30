@@ -20,6 +20,10 @@ export interface AfterSalesOrder{id:number;execution_no:string;return_id:number;
 export interface AfterSalesRepairTask{id:number;task_no:string;after_sales_order_id:number;status:string;description:string;result_notes?:string;started_at?:string;completed_at?:string;}
 export interface OperationDashboardSummary{status_counts:Record<string,Record<string,number>>;overdue_counts:Record<string,number>;average_close_hours:Record<string,number>;repeated_defects:Array<{key:string;count:number}>;inventory_impact:{transaction_count:number;quantity_delta:number;absolute_quantity:number};open_alerts:number;owner_todo_count:number;}
 export interface SlaAlert{id:number;alert_no:string;entity_type:string;entity_id:number;rule_id:number;title:string;due_at:string;status:string;owner_id?:number;warning_at?:string;escalated_at?:string;escalation_level:number;acknowledged_at?:string;resolved_at?:string;}
+export interface SupplierCorrectiveAction{id:number;scar_no:string;supplier_id:number;ncr_id:number;inspection_id:number;supplier_receipt_id:number;material_id:number;nonconforming_quantity:number;defect_description:string;severity:string;status:string;due_at?:string;issued_at?:string;containment_action?:string;root_cause?:string;corrective_action?:string;preventive_action?:string;response_evidence?:string;responded_at?:string;disposition_id?:number;reinspection_id?:number;verification_result?:string;verification_notes?:string;verified_at?:string;closed_at?:string;created_time:string;}
+export interface SupplierQualityPolicy{id:number;supplier_id:number;rolling_days:number;minimum_inspections:number;excellent_score:number;qualified_score:number;conditional_score:number;quality_weight:number;delivery_weight:number;auto_apply:boolean;block_on_open_critical_scar:boolean;status:string;remark?:string;}
+export interface SupplierQualityAssessment{id:number;assessment_no:string;supplier_id:number;period_start:string;period_end:string;assessed_at:string;grade:string;procurement_decision:string;overall_score:number;inspection_count:number;passed_count:number;failed_count:number;inspected_quantity:number;rejected_quantity:number;pass_rate:number;acceptance_rate:number;scar_count:number;scar_closed_count:number;corrective_score:number;quality_score:number;delivery_line_count:number;otif_line_count:number;delivery_score:number;critical_scar_open:boolean;applied_at?:string;applied_notes?:string;}
+export interface SupplierQualityDashboard{open_scar_count:number;overdue_scar_count:number;retest_pending_count:number;suspended_supplier_count:number;conditional_supplier_count:number;grade_counts:Record<string,number>;}
 export const getInspectionsApi=(params?:Recordable<any>)=>requestClient.get<Inspection[]>(`${baseUrl}/inspections`,{params});
 export const createInspectionApi=(data:Recordable<any>)=>requestClient.post<Inspection>(`${baseUrl}/inspections`,data);
 export const completeInspectionApi=(id:number,data:Recordable<any>)=>requestClient.post<Inspection>(`${baseUrl}/inspections/${id}/complete`,data);
@@ -77,3 +81,14 @@ export const getSlaAlertsApi=(params?:Recordable<any>)=>requestClient.get<SlaAle
 export const acknowledgeSlaAlertApi=(id:number)=>requestClient.post<SlaAlert>(`${baseUrl}/sla-alerts/${id}/acknowledge`);
 export const escalateSlaAlertApi=(id:number,level=1)=>requestClient.post<SlaAlert>(`${baseUrl}/sla-alerts/${id}/escalate`,{level});
 export const closeSlaAlertApi=(id:number)=>requestClient.post<SlaAlert>(`${baseUrl}/sla-alerts/${id}/close`);
+export const getSqmDashboardApi=()=>requestClient.get<SupplierQualityDashboard>(`${baseUrl}/sqm/dashboard`);
+export const getSupplierScarsApi=(params?:Recordable<any>)=>requestClient.get<SupplierCorrectiveAction[]>(`${baseUrl}/sqm/scars`,{params});
+export const issueSupplierScarApi=(id:number,data:Recordable<any>={})=>requestClient.post<SupplierCorrectiveAction>(`${baseUrl}/sqm/scars/${id}/issue`,data);
+export const respondSupplierScarApi=(id:number,data:Recordable<any>)=>requestClient.post<SupplierCorrectiveAction>(`${baseUrl}/sqm/scars/${id}/respond`,data);
+export const reinspectSupplierScarApi=(id:number)=>requestClient.post<SupplierCorrectiveAction>(`${baseUrl}/sqm/scars/${id}/reinspect`);
+export const verifySupplierScarApi=(id:number,data:Recordable<any>)=>requestClient.post<SupplierCorrectiveAction>(`${baseUrl}/sqm/scars/${id}/verify`,data);
+export const getSupplierQualityPoliciesApi=()=>requestClient.get<SupplierQualityPolicy[]>(`${baseUrl}/sqm/policies`);
+export const upsertSupplierQualityPolicyApi=(supplierId:number,data:Recordable<any>)=>requestClient.put<SupplierQualityPolicy>(`${baseUrl}/sqm/policies/${supplierId}`,data);
+export const getSupplierQualityAssessmentsApi=(params?:Recordable<any>)=>requestClient.get<SupplierQualityAssessment[]>(`${baseUrl}/sqm/assessments`,{params});
+export const recalculateSupplierQualityApi=(supplierId:number)=>requestClient.post<SupplierQualityAssessment>(`${baseUrl}/sqm/assessments/${supplierId}/recalculate`);
+export const recalculateAllSupplierQualityApi=()=>requestClient.post<SupplierQualityAssessment[]>(`${baseUrl}/sqm/assessments/recalculate-all`);

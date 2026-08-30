@@ -468,6 +468,10 @@ class QualityService:
                 ncr = await QualityService.get_ncr(db, inspection.source_id, lock=True)
                 await QualityService._refresh_ncr_status(db, ncr)
         await db.flush()
+        if inspection.inspection_type == InspectionType.INCOMING and inspection.source_type == 'SUPPLIER_RECEIPT':
+            from backend.plugin.quality.service.sqm_service import sqm_service
+
+            await sqm_service.assess_supplier_by_inspection(db, inspection)
         return inspection
 
     @staticmethod
@@ -511,6 +515,9 @@ class QualityService:
         )
         db.add(ncr)
         await db.flush()
+        from backend.plugin.quality.service.sqm_service import sqm_service
+
+        await sqm_service.ensure_scar_for_ncr(db, ncr)
         return ncr
 
     @staticmethod
