@@ -18,6 +18,12 @@ const routes: RouteRecordRaw[] = [
     component: () => import('../views/replenishment.vue'),
     meta: { title: '安全库存 / 自动补货' },
   },
+  {
+    name: 'MesInventoryShelfLife',
+    path: '/mes/inventory/shelf-life',
+    component: () => import('../views/shelf-life.vue'),
+    meta: { title: '批次效期 / FEFO / 召回' },
+  },
 ];
 
 export default routes;

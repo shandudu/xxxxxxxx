@@ -45,6 +45,9 @@ REQUIRED_COLUMNS = {
     'mes_stock_transaction': {'idempotency_key', 'quantity_delta'},
     'mes_production_report': {'idempotency_key', 'stock_transaction_id'},
     'mes_trace_code_sequence': {'rule_id', 'sequence_key', 'current_value'},
+    'mes_shelf_life_policy': {'material_id', 'warning_days', 'critical_days', 'min_remaining_days_at_issue'},
+    'mes_lot_quality_hold': {'lot_id', 'reason', 'status', 'inspection_id'},
+    'mes_lot_recall_item': {'recall_id', 'item_type', 'status', 'shipment_line_id'},
 }
 TABLE_PATTERN = re.compile(r"__tablename__\s*=\s*['\"]([^'\"]+)['\"]")
 ENV_PATTERN = re.compile(r"^([A-Z0-9_]+)\s*=\s*['\"]?([^'\"\r\n]*)['\"]?\s*$")

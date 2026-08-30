@@ -102,6 +102,86 @@ export interface ReplenishmentDashboard {
   production_suggestion_count: number;
 }
 
+export interface ShelfLifeDashboard {
+  policy_count: number;
+  warning_count: number;
+  critical_count: number;
+  expired_count: number;
+  open_hold_count: number;
+  active_recall_count: number;
+}
+
+export interface ShelfLifePolicy {
+  id: number;
+  material_id: number;
+  warning_days: number;
+  critical_days: number;
+  min_remaining_days_at_issue: number;
+  fefo_enabled: boolean;
+  auto_hold_expired: boolean;
+  retest_required: boolean;
+  status: string;
+  remark?: string;
+}
+
+export interface ExpiryAlert {
+  id: number;
+  lot_id: number;
+  level: 'CRITICAL' | 'EXPIRED' | 'WARNING';
+  days_remaining: number;
+  available_quantity: number;
+  status: string;
+  triggered_at: string;
+}
+
+export interface LotQualityHold {
+  id: number;
+  hold_no: string;
+  lot_id: number;
+  reason: string;
+  status: string;
+  inspection_id?: number;
+  original_expiry_date?: string;
+  new_expiry_date?: string;
+  held_at: string;
+  decision_reason?: string;
+}
+
+export interface FefoCandidate {
+  balance_id: number;
+  lot_id: number;
+  lot_no: string;
+  warehouse_id: number;
+  location_id: number;
+  expiry_date: string;
+  days_remaining: number;
+  available_quantity: number;
+  allocated_quantity: number;
+}
+
+export interface LotRecallItem {
+  id: number;
+  item_type: string;
+  status: string;
+  quantity: number;
+  lot_id?: number;
+  shipment_id?: number;
+  customer_id?: number;
+  action_notes?: string;
+}
+
+export interface LotRecall {
+  id: number;
+  recall_no: string;
+  root_lot_id: number;
+  reason: string;
+  severity: string;
+  status: string;
+  initiated_at: string;
+  closed_at?: string;
+  items: LotRecallItem[];
+}
+
 export function getInventoryBalancesApi(params?: Recordable<any>) {
   return requestClient.get<InventoryBalance[]>(`${baseUrl}/balances`, { params });
 }
@@ -143,4 +223,50 @@ export function firmReplenishmentApi(id: number) {
 }
 export function releaseReplenishmentApi(id: number, data: Recordable<any>) {
   return requestClient.post<ReplenishmentSuggestion>(`${baseUrl}/replenishment/${id}/release`, data);
+}
+
+export function getShelfLifeDashboardApi() {
+  return requestClient.get<ShelfLifeDashboard>(`${baseUrl}/shelf-life/dashboard`);
+}
+export function getShelfLifePoliciesApi() {
+  return requestClient.get<ShelfLifePolicy[]>(`${baseUrl}/shelf-life/policies`);
+}
+export function upsertShelfLifePolicyApi(materialId: number, data: Recordable<any>) {
+  return requestClient.put<ShelfLifePolicy>(`${baseUrl}/shelf-life/policies/${materialId}`, data);
+}
+export function syncExpiryAlertsApi() {
+  return requestClient.post<ExpiryAlert[]>(`${baseUrl}/shelf-life/alerts/sync`);
+}
+export function getExpiryAlertsApi(params?: Recordable<any>) {
+  return requestClient.get<ExpiryAlert[]>(`${baseUrl}/shelf-life/alerts`, { params });
+}
+export function acknowledgeExpiryAlertApi(id: number) {
+  return requestClient.post<ExpiryAlert>(`${baseUrl}/shelf-life/alerts/${id}/acknowledge`);
+}
+export function getLotHoldsApi(params?: Recordable<any>) {
+  return requestClient.get<LotQualityHold[]>(`${baseUrl}/shelf-life/holds`, { params });
+}
+export function createExpiryReinspectionApi(id: number) {
+  return requestClient.post<LotQualityHold>(`${baseUrl}/shelf-life/holds/${id}/reinspect`);
+}
+export function releaseLotHoldApi(id: number, data: Recordable<any>) {
+  return requestClient.post<LotQualityHold>(`${baseUrl}/shelf-life/holds/${id}/release`, data);
+}
+export function scrapLotHoldApi(id: number, data: Recordable<any>) {
+  return requestClient.post<LotQualityHold>(`${baseUrl}/shelf-life/holds/${id}/scrap`, data);
+}
+export function getFefoCandidatesApi(params: Recordable<any>) {
+  return requestClient.get<FefoCandidate[]>(`${baseUrl}/shelf-life/fefo-candidates`, { params });
+}
+export function getLotRecallsApi(params?: Recordable<any>) {
+  return requestClient.get<LotRecall[]>(`${baseUrl}/recalls`, { params });
+}
+export function createLotRecallApi(data: Recordable<any>) {
+  return requestClient.post<LotRecall>(`${baseUrl}/recalls`, data);
+}
+export function updateLotRecallItemApi(recallId: number, itemId: number, data: Recordable<any>) {
+  return requestClient.put<LotRecallItem>(`${baseUrl}/recalls/${recallId}/items/${itemId}`, data);
+}
+export function closeLotRecallApi(id: number) {
+  return requestClient.post<LotRecall>(`${baseUrl}/recalls/${id}/close`);
 }

@@ -1,6 +1,6 @@
 from datetime import datetime
 from decimal import Decimal
-from pydantic import ConfigDict,Field
+from pydantic import ConfigDict,Field,model_validator
 from backend.common.schema import SchemaBase
 from backend.plugin.sales.enums import SalesOrderStatus
 class CreateSalesOrderLine(SchemaBase):
@@ -12,7 +12,12 @@ class SalesOrderLineDetail(SchemaBase):
 class SalesOrderDetail(SchemaBase):
     model_config=ConfigDict(from_attributes=True);id:int;sales_order_no:str;customer_id:int;customer_code_snapshot:str;customer_name_snapshot:str;status:SalesOrderStatus;currency:str;requested_delivery_at:datetime|None;remark:str|None;created_time:datetime;lines:list[SalesOrderLineDetail]=Field(default_factory=list)
 class CreateShipmentLine(SchemaBase):
-    sales_order_line_id:int=Field(ge=1);lot_id:int|None=Field(default=None,ge=1);warehouse_id:int=Field(ge=1);location_id:int=Field(ge=1);quantity:Decimal=Field(gt=0,max_digits=18,decimal_places=6)
+    sales_order_line_id:int=Field(ge=1);lot_id:int|None=Field(default=None,ge=1);warehouse_id:int=Field(ge=1);location_id:int|None=Field(default=None,ge=1);quantity:Decimal=Field(gt=0,max_digits=18,decimal_places=6);auto_fefo:bool=False
+    @model_validator(mode='after')
+    def validate_allocation(self):
+        if self.auto_fefo and self.lot_id is not None:raise ValueError('auto FEFO cannot specify lot_id')
+        if not self.auto_fefo and self.location_id is None:raise ValueError('manual shipment requires location_id')
+        return self
 class CreateShipment(SchemaBase):
     shipment_no:str|None=Field(default=None,max_length=100);sales_order_id:int=Field(ge=1);remark:str|None=Field(default=None,max_length=500);lines:list[CreateShipmentLine]=Field(min_length=1,max_length=500)
 class ShipmentLineDetail(SchemaBase):

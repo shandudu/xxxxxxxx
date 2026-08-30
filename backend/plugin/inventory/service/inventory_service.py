@@ -55,6 +55,13 @@ class InventoryService:
             return existing
         if quantity_delta == 0:
             raise errors.RequestError(msg='ZERO_STOCK_TRANSACTION')
+        if lot_id is not None and quantity_delta < 0 and transaction_type in (
+            StockTransactionType.ISSUE,
+            StockTransactionType.SHIPMENT,
+        ):
+            from backend.plugin.inventory.service.shelf_life_service import shelf_life_service
+
+            await shelf_life_service.ensure_lot_issuable(db, lot_id)
         await InventoryService._validate_position(db, material_id, lot_id, warehouse_id, location_id)
         balance = await inventory_repo.get_balance_for_update(db, material_id, lot_id, warehouse_id, location_id)
         if balance is None:

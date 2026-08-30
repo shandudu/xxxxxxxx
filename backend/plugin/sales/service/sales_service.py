@@ -1,4 +1,5 @@
 from collections.abc import Sequence
+from decimal import Decimal
 from uuid import uuid4
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -77,19 +78,31 @@ class SalesService:
         number=(obj.shipment_no or f'SHP-{timezone.now():%Y%m%d%H%M%S}-{uuid4().hex[:6]}').upper();shipment=Shipment(shipment_no=number,sales_order_id=order.id,customer_id=order.customer_id,customer_code_snapshot=order.customer_code_snapshot,customer_name_snapshot=order.customer_name_snapshot,remark=obj.remark);db.add(shipment);await db.flush();lines=[]
         ids=[x.sales_order_line_id for x in obj.lines]
         if len(ids)!=len(set(ids)):raise errors.RequestError(msg='DUPLICATE_SALES_ORDER_LINE')
-        for no,item in enumerate(obj.lines,1):
+        for item in obj.lines:
             line=await db.scalar(select(SalesOrderLine).where(SalesOrderLine.id==item.sales_order_line_id,SalesOrderLine.deleted==0).with_for_update())
             if not line or line.sales_order_id!=order.id:raise errors.NotFoundError(msg='SALES_ORDER_LINE_NOT_FOUND')
             if line.shipped_quantity+item.quantity>line.ordered_quantity:raise errors.ConflictError(msg='SHIPMENT_QUANTITY_EXCEEDS_REMAINING')
-            lot=None
-            if item.lot_id:
-                lot=await db.scalar(select(MaterialLot).where(MaterialLot.id==item.lot_id,MaterialLot.deleted==0))
-                if not lot or lot.material_id!=line.material_id:raise errors.ConflictError(msg='LOT_MATERIAL_MISMATCH')
-                if lot.quality_status!=QualityStatus.PASS:raise errors.ConflictError(msg='LOT_QUALITY_NOT_PASSED')
             material=await db.scalar(select(Material).where(Material.id==line.material_id,Material.deleted==0))
-            if material and material.batch_control and not lot:raise errors.RequestError(msg='SHIPMENT_LOT_REQUIRED')
-            tx=await inventory_service.post_transaction(db,idempotency_key=f'SHIPMENT:{shipment.id}:{no}',transaction_type=StockTransactionType.SHIPMENT,material_id=line.material_id,lot_id=lot.id if lot else None,warehouse_id=item.warehouse_id,location_id=item.location_id,quantity_delta=-item.quantity,reference_type='SHIPMENT',reference_id=shipment.id,reference_no=shipment.shipment_no,remark=obj.remark,operator_id=SalesService.operator_id())
-            sl=ShipmentLine(shipment_id=shipment.id,sales_order_line_id=line.id,line_no=no,material_id=line.material_id,lot_id=lot.id if lot else None,warehouse_id=item.warehouse_id,location_id=item.location_id,quantity=item.quantity,stock_transaction_id=tx.id,lot_no_snapshot=lot.lot_no if lot else None);db.add(sl);lines.append(sl);line.shipped_quantity+=item.quantity
+            allocations=[]
+            if item.auto_fefo:
+                if not material or not material.batch_control:raise errors.ConflictError(msg='FEFO_REQUIRES_BATCH_CONTROL')
+                from backend.plugin.inventory.service.shelf_life_service import shelf_life_service
+                await shelf_life_service.sync_expiry_alerts(db)
+                candidates=await shelf_life_service.fefo_candidates(db,material_id=line.material_id,warehouse_id=item.warehouse_id,quantity=item.quantity,lock=True)
+                allocations=[(candidate.lot_id,candidate.location_id,candidate.allocated_quantity,candidate.lot_no) for candidate in candidates]
+            else:
+                lot=None
+                if item.lot_id:
+                    lot=await db.scalar(select(MaterialLot).where(MaterialLot.id==item.lot_id,MaterialLot.deleted==0))
+                    if not lot or lot.material_id!=line.material_id:raise errors.ConflictError(msg='LOT_MATERIAL_MISMATCH')
+                    if lot.quality_status!=QualityStatus.PASS:raise errors.ConflictError(msg='LOT_QUALITY_NOT_PASSED')
+                if material and material.batch_control and not lot:raise errors.RequestError(msg='SHIPMENT_LOT_REQUIRED')
+                allocations=[(lot.id if lot else None,item.location_id,item.quantity,lot.lot_no if lot else None)]
+            for lot_id,location_id,allocated_quantity,lot_no in allocations:
+                no=len(lines)+1
+                tx=await inventory_service.post_transaction(db,idempotency_key=f'SHIPMENT:{shipment.id}:{no}',transaction_type=StockTransactionType.SHIPMENT,material_id=line.material_id,lot_id=lot_id,warehouse_id=item.warehouse_id,location_id=location_id,quantity_delta=-Decimal(allocated_quantity),reference_type='SHIPMENT',reference_id=shipment.id,reference_no=shipment.shipment_no,remark=obj.remark,operator_id=SalesService.operator_id())
+                sl=ShipmentLine(shipment_id=shipment.id,sales_order_line_id=line.id,line_no=no,material_id=line.material_id,lot_id=lot_id,warehouse_id=item.warehouse_id,location_id=location_id,quantity=allocated_quantity,stock_transaction_id=tx.id,lot_no_snapshot=lot_no);db.add(sl);lines.append(sl)
+            line.shipped_quantity+=item.quantity
         all_lines=await SalesService.order_lines(db,order.id);order.status=SalesOrderStatus.SHIPPED if all(x.shipped_quantity>=x.ordered_quantity for x in all_lines) else SalesOrderStatus.PARTIALLY_SHIPPED;await db.flush()
         from backend.plugin.sales.service.delivery_service import delivery_service
         await delivery_service.refresh_order(db, order.id)
