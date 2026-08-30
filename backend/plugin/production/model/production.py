@@ -186,6 +186,11 @@ class ProductionReport(Base):
         sa.ForeignKeyConstraint(['location_id'], ['mes_location.id'], name='fk_production_report_location'),
         sa.ForeignKeyConstraint(['stock_transaction_id'], ['mes_stock_transaction.id'], name='fk_production_report_stock_tx'),
         sa.UniqueConstraint('report_no', 'deleted', name='uk_mes_production_report_no'),
+        sa.UniqueConstraint(
+            'work_order_id', 'idempotency_key', 'deleted',
+            name='uk_mes_production_report_idempotency',
+        ),
+        sa.Index('idx_mes_production_report_work_order', 'work_order_id'),
         {'comment': 'MES production completion reports'},
     )
     id: Mapped[id_key] = mapped_column(init=False)
@@ -196,5 +201,6 @@ class ProductionReport(Base):
     warehouse_id: Mapped[int] = mapped_column(sa.BigInteger)
     location_id: Mapped[int] = mapped_column(sa.BigInteger)
     stock_transaction_id: Mapped[int] = mapped_column(sa.BigInteger)
+    idempotency_key: Mapped[str | None] = mapped_column(sa.String(180), default=None)
     lot_id: Mapped[int | None] = mapped_column(sa.BigInteger, default=None)
     remark: Mapped[str | None] = mapped_column(UniversalText, default=None)

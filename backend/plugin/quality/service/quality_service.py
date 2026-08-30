@@ -679,17 +679,33 @@ class QualityService:
         elif disposition.disposition_type == DispositionType.USE_AS_IS and ncr.lot_id:
             lot = await db.scalar(select(MaterialLot).where(MaterialLot.id == ncr.lot_id, MaterialLot.deleted == 0).with_for_update())
             if lot:
-                lot.quality_status = QualityStatus.PASS
+                # A partial concession cannot release the entire physical lot.
+                lot.quality_status = QualityStatus.HOLD
         disposition.status = DispositionStatus.EXECUTED
         disposition.executed_at = timezone.now()
         disposition.executed_by = QualityService._operator_id()
-        remaining = await db.scalar(select(func.coalesce(func.sum(NonconformanceDisposition.quantity), 0)).where(
-            NonconformanceDisposition.ncr_id == ncr.id,
-            NonconformanceDisposition.deleted == 0,
-            NonconformanceDisposition.status == DispositionStatus.EXECUTED,
-        ))
-        if Decimal(remaining) >= ncr.nonconforming_quantity:
-            await QualityService._refresh_ncr_status(db, ncr)
+        # The project session disables autoflush. Persist the in-transaction state
+        # before aggregating dispositions so the current execution is included.
+        await db.flush()
+        await QualityService._refresh_ncr_status(db, ncr)
+        if (
+            disposition.disposition_type == DispositionType.USE_AS_IS
+            and ncr.lot_id
+            and ncr.status == NcrStatus.DISPOSED
+        ):
+            unresolved_ncr = await db.scalar(select(NonconformanceReport.id).where(
+                NonconformanceReport.lot_id == ncr.lot_id,
+                NonconformanceReport.id != ncr.id,
+                NonconformanceReport.status.not_in((NcrStatus.DISPOSED, NcrStatus.CLOSED)),
+                NonconformanceReport.deleted == 0,
+            ))
+            if unresolved_ncr is None:
+                lot = await db.scalar(select(MaterialLot).where(
+                    MaterialLot.id == ncr.lot_id,
+                    MaterialLot.deleted == 0,
+                ).with_for_update())
+                if lot:
+                    lot.quality_status = QualityStatus.PASS
         await db.flush()
         return disposition
 

@@ -766,8 +766,9 @@ class MaintenanceService:
 
     @staticmethod
     async def dashboard(db: AsyncSession) -> MaintenanceDashboard:
-        today = timezone.now().date()
-        since = timezone.now() - timedelta(days=30)
+        now = timezone.now()
+        today = now.date()
+        since = now - timedelta(days=30)
         active_plans = await db.scalar(select(func.count(MaintenancePlan.id)).where(MaintenancePlan.status == PlanStatus.ACTIVE, MaintenancePlan.deleted == 0)) or 0
         pending_tasks = await db.scalar(select(func.count(MaintenanceTask.id)).where(MaintenanceTask.status == TaskStatus.PENDING, MaintenanceTask.deleted == 0)) or 0
         overdue_tasks = await db.scalar(select(func.count(MaintenanceTask.id)).where(MaintenanceTask.status.in_((TaskStatus.PENDING, TaskStatus.IN_PROGRESS)), MaintenanceTask.due_date < today, MaintenanceTask.deleted == 0)) or 0
@@ -775,9 +776,20 @@ class MaintenanceService:
         open_repairs = await db.scalar(select(func.count(RepairOrder.id)).where(RepairOrder.status.in_((RepairStatus.REPORTED, RepairStatus.ASSIGNED, RepairStatus.IN_REPAIR)), RepairOrder.deleted == 0)) or 0
         critical_repairs = await db.scalar(select(func.count(RepairOrder.id)).where(RepairOrder.fault_level == FaultLevel.CRITICAL, RepairOrder.status.in_((RepairStatus.REPORTED, RepairStatus.ASSIGNED, RepairStatus.IN_REPAIR)), RepairOrder.deleted == 0)) or 0
         open_downtimes = await db.scalar(select(func.count(EquipmentDowntime.id)).where(EquipmentDowntime.status == DowntimeStatus.OPEN, EquipmentDowntime.deleted == 0)) or 0
-        closed_minutes = Decimal(await db.scalar(select(func.coalesce(func.sum(EquipmentDowntime.duration_minutes), 0)).where(EquipmentDowntime.status == DowntimeStatus.CLOSED, EquipmentDowntime.end_at >= since, EquipmentDowntime.deleted == 0)) or 0)
-        open_rows = (await db.scalars(select(EquipmentDowntime).where(EquipmentDowntime.status == DowntimeStatus.OPEN, EquipmentDowntime.start_at >= since, EquipmentDowntime.deleted == 0))).all()
-        total_minutes = closed_minutes + sum((duration_minutes(row.start_at, timezone.now()) for row in open_rows), Decimal('0'))
+        overlap_rows = (await db.scalars(select(EquipmentDowntime).where(
+            EquipmentDowntime.start_at <= now,
+            (EquipmentDowntime.end_at.is_(None) | (EquipmentDowntime.end_at >= since)),
+            EquipmentDowntime.status.in_((DowntimeStatus.OPEN, DowntimeStatus.CLOSED)),
+            EquipmentDowntime.deleted == 0,
+        ))).all()
+        total_minutes = sum(
+            (
+                duration_minutes(max(row.start_at, since), min(row.end_at or now, now))
+                for row in overlap_rows
+                if min(row.end_at or now, now) > max(row.start_at, since)
+            ),
+            Decimal('0'),
+        )
         completed_30d = await db.scalar(select(func.count(MaintenanceTask.id)).where(MaintenanceTask.status == TaskStatus.COMPLETED, MaintenanceTask.completed_at >= since, MaintenanceTask.deleted == 0)) or 0
         due_30d = await db.scalar(select(func.count(MaintenanceTask.id)).where(MaintenanceTask.due_date >= since.date(), MaintenanceTask.due_date <= today, MaintenanceTask.deleted == 0)) or 0
         rate = (Decimal(completed_30d) / Decimal(due_30d) * Decimal('100')).quantize(Decimal('0.01')) if due_30d else Decimal('0')

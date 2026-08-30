@@ -22,6 +22,12 @@ def test_production_models_registered() -> None:
     assert ProductionAndonEvent.__tablename__ == 'mes_production_andon_event'
     assert ProductionAndonAssignment.__tablename__ == 'mes_production_andon_assignment'
     assert ProductionAndonAction.__tablename__ == 'mes_production_andon_action'
+    assert 'uk_mes_production_report_idempotency' in {
+        constraint.name for constraint in ProductionReport.__table__.constraints
+    }
+    assert 'idx_mes_production_report_work_order' in {
+        index.name for index in ProductionReport.__table__.indexes
+    }
 
 
 def test_production_route_surface() -> None:
@@ -48,8 +54,10 @@ def test_work_order_and_report_schema() -> None:
     assert WorkOrderStatus.IN_PROGRESS == 'IN_PROGRESS'
     report = CreateProductionReport(
         work_order_id=1, good_quantity=Decimal('2.5'), warehouse_id=1, location_id=2,
+        idempotency_key='production-report-001',
     )
     assert report.scrap_quantity == Decimal('0')
+    assert report.idempotency_key == 'production-report-001'
 
 
 def test_issue_requires_at_least_one_line() -> None:

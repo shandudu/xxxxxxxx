@@ -134,6 +134,7 @@ class CreateMaterialReturn(SchemaBase):
 
 class CreateProductionReport(SchemaBase):
     report_no: str | None = Field(default=None, max_length=100)
+    idempotency_key: str | None = Field(default=None, min_length=8, max_length=180)
     work_order_id: int = Field(ge=1)
     good_quantity: Decimal = Field(gt=0, max_digits=18, decimal_places=6)
     scrap_quantity: Decimal = Field(default=Decimal('0'), ge=0, max_digits=18, decimal_places=6)

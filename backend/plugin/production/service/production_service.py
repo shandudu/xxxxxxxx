@@ -316,11 +316,60 @@ class ProductionService:
     @staticmethod
     async def report_completion(db: AsyncSession, obj: CreateProductionReport) -> ProductionReport:
         order = await production_repo.get_order(db, obj.work_order_id, lock=True)
-        if not order or order.status != WorkOrderStatus.IN_PROGRESS:
+        if not order:
+            raise errors.NotFoundError(msg='WORK_ORDER_NOT_FOUND')
+        requested_number = obj.report_no.strip().upper() if obj.report_no else None
+        idempotency_key = obj.idempotency_key.strip() if obj.idempotency_key else None
+        if obj.idempotency_key is not None and not idempotency_key:
+            raise errors.RequestError(msg='PRODUCTION_REPORT_IDEMPOTENCY_KEY_REQUIRED')
+        existing_by_key = None
+        if idempotency_key:
+            existing_by_key = await db.scalar(
+                select(ProductionReport).where(
+                    ProductionReport.work_order_id == order.id,
+                    ProductionReport.idempotency_key == idempotency_key,
+                    ProductionReport.deleted == 0,
+                ).with_for_update()
+            )
+        existing_by_number = None
+        if requested_number:
+            existing_by_number = await db.scalar(
+                select(ProductionReport).where(
+                    ProductionReport.report_no == requested_number,
+                    ProductionReport.deleted == 0,
+                ).with_for_update()
+            )
+        if existing_by_key and existing_by_number and existing_by_key.id != existing_by_number.id:
+            raise errors.ConflictError(msg='PRODUCTION_REPORT_IDEMPOTENCY_CONFLICT')
+        existing = existing_by_key or existing_by_number
+        if existing:
+            requested_lot_id = obj.lot_id
+            if obj.lot_no:
+                requested_lot = await db.scalar(
+                    select(MaterialLot).where(
+                        MaterialLot.lot_no == obj.lot_no.strip().upper(),
+                        MaterialLot.deleted == 0,
+                    )
+                )
+                requested_lot_id = requested_lot.id if requested_lot else None
+            same_request = (
+                existing.work_order_id == obj.work_order_id
+                and existing.good_quantity == obj.good_quantity
+                and existing.scrap_quantity == obj.scrap_quantity
+                and existing.warehouse_id == obj.warehouse_id
+                and existing.location_id == obj.location_id
+                and existing.lot_id == requested_lot_id
+                and (not requested_number or existing.report_no == requested_number)
+                and (not idempotency_key or existing.idempotency_key == idempotency_key)
+            )
+            if not same_request:
+                raise errors.ConflictError(msg='PRODUCTION_REPORT_IDEMPOTENCY_CONFLICT')
+            return existing
+        if order.status != WorkOrderStatus.IN_PROGRESS:
             raise errors.ConflictError(msg='WORK_ORDER_NOT_IN_PROGRESS')
         if order.completed_quantity + obj.good_quantity > order.planned_quantity:
             raise errors.ConflictError(msg='COMPLETION_EXCEEDS_PLANNED_QUANTITY')
-        number = (obj.report_no or f'RPT-{timezone.now():%Y%m%d%H%M%S}-{uuid4().hex[:6]}').upper()
+        number = requested_number or f'RPT-{timezone.now():%Y%m%d%H%M%S}-{uuid4().hex[:6]}'.upper()
         lot: MaterialLot | None = None
         if obj.lot_id:
             lot = await db.scalar(select(MaterialLot).where(MaterialLot.id == obj.lot_id, MaterialLot.deleted == 0))
@@ -346,7 +395,7 @@ class ProductionService:
             if product and product.batch_control:
                 raise errors.RequestError(msg='OUTPUT_LOT_REQUIRED')
         transaction = await inventory_service.post_transaction(
-            db, idempotency_key=f'PRODUCTION_REPORT:{order.id}:{number}', transaction_type=StockTransactionType.PRODUCTION_RECEIPT,
+            db, idempotency_key=f'PRODUCTION_REPORT:{order.id}:{idempotency_key or number}', transaction_type=StockTransactionType.PRODUCTION_RECEIPT,
             material_id=order.product_material_id, lot_id=lot.id if lot else None,
             warehouse_id=obj.warehouse_id, location_id=obj.location_id, quantity_delta=obj.good_quantity,
             reference_type='PRODUCTION_REPORT', reference_id=order.id, reference_no=number,
@@ -355,7 +404,8 @@ class ProductionService:
         report = ProductionReport(
             report_no=number, work_order_id=order.id, good_quantity=obj.good_quantity,
             scrap_quantity=obj.scrap_quantity, warehouse_id=obj.warehouse_id, location_id=obj.location_id,
-            lot_id=lot.id if lot else None, stock_transaction_id=transaction.id, remark=obj.remark,
+            lot_id=lot.id if lot else None, stock_transaction_id=transaction.id,
+            idempotency_key=idempotency_key, remark=obj.remark,
         )
         db.add(report)
         order.completed_quantity += obj.good_quantity

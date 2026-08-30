@@ -76,6 +76,8 @@ class AndonService:
     @staticmethod
     async def assign(db: AsyncSession, event_id: int, obj: AssignAndonEvent) -> AndonEventDetail:
         event = await AndonService._event(db, event_id, lock=True)
+        if event.status in (AndonStatus.RESOLVED, AndonStatus.CANCELLED):
+            raise errors.ConflictError(msg='ANDON_EVENT_NOT_ASSIGNABLE')
         previous = event.status
         event.assignee_id = obj.assignee_id
         event.status = AndonStatus.ACKNOWLEDGED if event.status == AndonStatus.OPEN else event.status
@@ -122,9 +124,11 @@ class AndonService:
     @staticmethod
     async def escalate(db: AsyncSession, event_id: int, notes: str | None = None) -> AndonEventDetail:
         event = await AndonService._event(db, event_id, lock=True)
+        if event.status in (AndonStatus.RESOLVED, AndonStatus.CANCELLED):
+            raise errors.ConflictError(msg='ANDON_EVENT_NOT_ESCALATABLE')
         previous = event.status
         event.escalation_level += 1
-        event.status = AndonStatus.BLOCKED if event.status not in (AndonStatus.RESOLVED, AndonStatus.CANCELLED) else event.status
+        event.status = AndonStatus.BLOCKED
         await AndonService._action(db, event, 'ESCALATED', previous, notes or f'升级到第 {event.escalation_level} 级')
         await db.flush()
         return AndonEventDetail.model_validate(event)

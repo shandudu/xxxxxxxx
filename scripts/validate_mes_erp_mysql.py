@@ -43,6 +43,7 @@ REQUIRED_CORE_TABLES = {'sys_user', 'sys_role', 'sys_menu', 'sys_opera_log'}
 REQUIRED_COLUMNS = {
     'mes_inventory_balance': {'version', 'balance_key'},
     'mes_stock_transaction': {'idempotency_key', 'quantity_delta'},
+    'mes_production_report': {'idempotency_key', 'stock_transaction_id'},
     'mes_trace_code_sequence': {'rule_id', 'sequence_key', 'current_value'},
 }
 TABLE_PATTERN = re.compile(r"__tablename__\s*=\s*['\"]([^'\"]+)['\"]")

@@ -15,8 +15,14 @@ from backend.plugin.equipment.model import Equipment, EquipmentCategory
 from backend.plugin.finance.model import FinancePeriod
 from backend.plugin.inventory.enums import StockTransactionType
 from backend.plugin.inventory.service import inventory_service
-from backend.plugin.maintenance.enums import FaultLevel, RepairStatus
-from backend.plugin.maintenance.model import RepairCostPosting, RepairOrder
+from backend.plugin.maintenance.enums import (
+    DowntimeCategory,
+    DowntimeSourceType,
+    DowntimeStatus,
+    FaultLevel,
+    RepairStatus,
+)
+from backend.plugin.maintenance.model import EquipmentDowntime, RepairCostPosting, RepairOrder
 from backend.plugin.maintenance.schema.maintenance import IssueRepairPart
 from backend.plugin.maintenance.service import maintenance_service
 from backend.plugin.trace.model import MaterialLot
@@ -77,6 +83,36 @@ async def validate() -> None:
                 db.add(equipment)
                 await db.flush()
                 now = timezone.now()
+                baseline_dashboard = await maintenance_service.dashboard(db)
+                since = now - timedelta(days=30)
+                db.add_all([
+                    EquipmentDowntime(
+                        downtime_no='REPAIR-FREEZE-DT-CLOSED',
+                        equipment_id=equipment.id,
+                        category=DowntimeCategory.UNPLANNED,
+                        source_type=DowntimeSourceType.MANUAL,
+                        start_at=since - timedelta(days=1),
+                        end_at=since + timedelta(days=1),
+                        status=DowntimeStatus.CLOSED,
+                        duration_minutes=Decimal('2880'),
+                    ),
+                    EquipmentDowntime(
+                        downtime_no='REPAIR-FREEZE-DT-OPEN',
+                        equipment_id=equipment.id,
+                        category=DowntimeCategory.UNPLANNED,
+                        source_type=DowntimeSourceType.MANUAL,
+                        start_at=since - timedelta(days=2),
+                        status=DowntimeStatus.OPEN,
+                    ),
+                ])
+                await db.flush()
+                overlap_dashboard = await maintenance_service.dashboard(db)
+                overlap_delta = (
+                    overlap_dashboard.downtime_minutes_30d
+                    - baseline_dashboard.downtime_minutes_30d
+                )
+                if abs(overlap_delta - Decimal('44640')) > Decimal('1'):
+                    raise RuntimeError(f'maintenance 30d overlap calculation invalid: {overlap_delta}')
                 repairs = [
                     RepairOrder(
                         repair_no=f'REPAIR-FREEZE-{index}',
@@ -132,7 +168,10 @@ async def validate() -> None:
                         raise
                 else:
                     raise RuntimeError('repair part was issued after cost posting')
-                print('MAINTENANCE_COST_FREEZE_RUN_OK scoped_keys=2 blocked_after_posting=True')
+                print(
+                    'MAINTENANCE_COST_FREEZE_RUN_OK '
+                    f'scoped_keys=2 blocked_after_posting=True overlap_minutes={overlap_delta}'
+                )
                 raise _RollbackValidation
         except _RollbackValidation:
             print('MAINTENANCE_COST_FREEZE_ROLLBACK_OK')
