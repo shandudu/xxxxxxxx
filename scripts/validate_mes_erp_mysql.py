@@ -57,6 +57,13 @@ REQUIRED_COLUMNS = {
     'erp_supplier_ppap_submission': {'supplier_id', 'material_id', 'status', 'expires_at'},
     'erp_supplier_approved_material': {'supplier_id', 'material_id', 'status', 'next_review_at'},
     'erp_supplier_periodic_review': {'supplier_id', 'avl_id', 'decision'},
+    'mes_mold_asset': {'mold_code', 'current_shots', 'designed_life_shots', 'status'},
+    'mes_mold_cavity': {'mold_id', 'cavity_no', 'status', 'defect_quantity'},
+    'mes_mold_mount_record': {'mold_id', 'equipment_id', 'work_order_id', 'status'},
+    'mes_mold_usage_record': {'mold_id', 'production_report_id', 'shot_count'},
+    'mes_mold_maintenance_order': {'mold_id', 'maintenance_type', 'status', 'total_cost'},
+    'mes_mold_cavity_quality_record': {'mold_id', 'cavity_id', 'result'},
+    'mes_mold_cost_ledger': {'mold_id', 'cost_type', 'amount'},
 }
 TABLE_PATTERN = re.compile(r"__tablename__\s*=\s*['\"]([^'\"]+)['\"]")
 ENV_PATTERN = re.compile(r"^([A-Z0-9_]+)\s*=\s*['\"]?([^'\"\r\n]*)['\"]?\s*$")

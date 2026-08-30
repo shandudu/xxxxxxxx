@@ -427,6 +427,11 @@ class ProductionService:
                 source_no=report.report_no,
                 quantity=obj.good_quantity,
             )
+        # A work-order-bound mold mount turns production quantity into idempotent
+        # shot usage and updates mold/cavity life counters in the same transaction.
+        from backend.plugin.equipment.service.mold_service import mold_service
+
+        await mold_service.register_report_usage(db, report)
         return report
 
 

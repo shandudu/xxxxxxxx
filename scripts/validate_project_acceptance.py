@@ -28,6 +28,7 @@ CHECKS: tuple[tuple[str, ...], ...] = (
     ('scripts/validate_shelf_life_fefo_recall_rollback.py',),
     ('scripts/validate_trace_lot_conservation_rollback.py',),
     ('scripts/validate_maintenance_cost_freeze_rollback.py',),
+    ('scripts/validate_mold_lifecycle_rollback.py',),
     ('scripts/validate_production_andon_rollback.py',),
     ('scripts/validate_quality_nonconformance_rollback.py',),
     ('scripts/validate_quality_capa_rollback.py',),
