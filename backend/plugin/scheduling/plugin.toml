@@ -17,3 +17,7 @@ tags = "MES APS finite-capacity scheduling"
 [api.shopfloor]
 prefix = "/shopfloor"
 tags = "MES shop-floor dispatch and workstation terminal"
+
+[api.workforce]
+prefix = "/workforce"
+tags = "MES workforce qualification and roster access control"

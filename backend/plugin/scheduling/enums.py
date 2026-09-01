@@ -52,3 +52,15 @@ class TeamMemberRole(StrEnum):
 class WorkstationSessionStatus(StrEnum):
     ACTIVE = 'ACTIVE'
     CLOSED = 'CLOSED'
+
+
+class QualificationStatus(StrEnum):
+    ACTIVE = 'ACTIVE'
+    SUSPENDED = 'SUSPENDED'
+    REVOKED = 'REVOKED'
+
+
+class RosterStatus(StrEnum):
+    PLANNED = 'PLANNED'
+    CONFIRMED = 'CONFIRMED'
+    CANCELLED = 'CANCELLED'

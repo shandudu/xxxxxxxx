@@ -3,6 +3,7 @@ import type { Recordable } from '@vben/types';
 import { requestClient } from '#/api/request';
 
 const baseUrl = '/api/v1/mes/scheduling';
+const workforceUrl = '/api/v1/mes/workforce';
 
 export type ConfigStatus = 'ACTIVE' | 'DISABLED';
 export type SchedulingDirection = 'BACKWARD' | 'FORWARD';
@@ -185,6 +186,16 @@ export interface PageResult<T> {
   total_pages: number;
 }
 
+export interface JobType { id:number; job_code:string; job_name:string; description?:string; status:ConfigStatus; created_time:string }
+export interface SkillLevel { id:number; level_code:string; level_name:string; rank_order:number; description?:string; status:ConfigStatus; created_time:string }
+export interface WorkerSkill { id:number; user_id:number; job_type_id:number; skill_level_id:number; assessed_on:string; expires_on?:string; assessor?:string; status:string; remark?:string }
+export interface WorkerCertificate { id:number; user_id:number; certificate_type:string; certificate_name:string; certificate_no:string; issued_on:string; valid_from:string; expires_on:string; issuer?:string; evidence_url?:string; status:string; validity_state:string }
+export interface PositionRule { id:number; rule_code:string; rule_name:string; job_type_id:number; minimum_skill_level_id:number; operation_id?:number; work_center_id?:number; required_certificate_type?:string; require_authorization:boolean; require_roster:boolean; status:ConfigStatus }
+export interface WorkerAuthorization { id:number; user_id:number; job_type_id:number; work_center_id:number; operation_id?:number; effective_from:string; effective_to?:string; approved_by?:number; status:string }
+export interface WorkerRoster { id:number; user_id:number; work_date:string; shift_id:number; work_center_id:number; job_type_id:number; status:string }
+export interface WorkforceDashboard { active_job_types:number; active_skill_levels:number; qualified_workers:number; certificates_expiring_30_days:number; expired_certificates:number; active_authorizations:number; confirmed_today_rosters:number; active_rules:number }
+export interface AccessCheckResult { allowed:boolean; enforcement_enabled:boolean; matched_rule_id?:number; reasons:string[] }
+
 export const getShiftsApi = () => requestClient.get<Shift[]>(`${baseUrl}/shifts`);
 export const createShiftApi = (data: Recordable<any>) => requestClient.post<Shift>(`${baseUrl}/shifts`, data);
 export const updateShiftApi = (id: number, data: Recordable<any>) => requestClient.put<Shift>(`${baseUrl}/shifts/${id}`, data);
@@ -210,3 +221,20 @@ export const cancelDispatchApi = (id: number) => requestClient.post<Dispatch>(`$
 
 export const getWorkCenterOptionsApi = () => requestClient.get<WorkCenterOption[]>('/api/v1/mes/work-center/options', { params: { active_only: true } });
 export const getUserOptionsApi = () => requestClient.get<PageResult<UserOption>>('/api/v1/sys/users', { params: { page: 1, size: 200, status: 1 } });
+
+export const getWorkforceDashboardApi = () => requestClient.get<WorkforceDashboard>(`${workforceUrl}/dashboard`);
+export const getJobTypesApi = () => requestClient.get<JobType[]>(`${workforceUrl}/job-types`);
+export const saveJobTypeApi = (data:Recordable<any>) => requestClient.post<JobType>(`${workforceUrl}/job-types`, data);
+export const getSkillLevelsApi = () => requestClient.get<SkillLevel[]>(`${workforceUrl}/skill-levels`);
+export const saveSkillLevelApi = (data:Recordable<any>) => requestClient.post<SkillLevel>(`${workforceUrl}/skill-levels`, data);
+export const getWorkerSkillsApi = () => requestClient.get<WorkerSkill[]>(`${workforceUrl}/skills`);
+export const saveWorkerSkillApi = (data:Recordable<any>) => requestClient.post<WorkerSkill>(`${workforceUrl}/skills`, data);
+export const getWorkerCertificatesApi = () => requestClient.get<WorkerCertificate[]>(`${workforceUrl}/certificates`);
+export const saveWorkerCertificateApi = (data:Recordable<any>) => requestClient.post<WorkerCertificate>(`${workforceUrl}/certificates`, data);
+export const getPositionRulesApi = () => requestClient.get<PositionRule[]>(`${workforceUrl}/rules`);
+export const savePositionRuleApi = (data:Recordable<any>) => requestClient.post<PositionRule>(`${workforceUrl}/rules`, data);
+export const getWorkerAuthorizationsApi = () => requestClient.get<WorkerAuthorization[]>(`${workforceUrl}/authorizations`);
+export const saveWorkerAuthorizationApi = (data:Recordable<any>) => requestClient.post<WorkerAuthorization>(`${workforceUrl}/authorizations`, data);
+export const getWorkerRostersApi = (params?:Recordable<any>) => requestClient.get<WorkerRoster[]>(`${workforceUrl}/rosters`, { params });
+export const saveWorkerRosterApi = (data:Recordable<any>) => requestClient.post<WorkerRoster>(`${workforceUrl}/rosters`, data);
+export const checkWorkforceAccessApi = (data:Recordable<any>) => requestClient.post<AccessCheckResult>(`${workforceUrl}/access-check`, data);

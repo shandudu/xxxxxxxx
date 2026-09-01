@@ -12,6 +12,15 @@ const routes: RouteRecordRaw[] = [
       title: $t('scheduling.menu'),
     },
   },
+  {
+    name: 'MesWorkforceQualification',
+    path: '/mes/workforce-qualification',
+    component: () => import('../views/workforce.vue'),
+    meta: {
+      icon: 'mdi:account-hard-hat',
+      title: $t('scheduling.workforceMenu'),
+    },
+  },
 ];
 
 export default routes;

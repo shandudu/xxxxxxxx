@@ -13,6 +13,15 @@ from backend.plugin.scheduling.model.shopfloor import (
     Workstation,
     WorkstationSession,
 )
+from backend.plugin.scheduling.model.workforce import (
+    JobType,
+    PositionQualificationRule,
+    SkillLevel,
+    WorkerAuthorization,
+    WorkerCertificate,
+    WorkerRoster,
+    WorkerSkill,
+)
 
 __all__ = [
     'ApsDispatch',
@@ -26,4 +35,11 @@ __all__ = [
     'ProductionTeamMember',
     'Workstation',
     'WorkstationSession',
+    'JobType',
+    'SkillLevel',
+    'WorkerSkill',
+    'WorkerCertificate',
+    'PositionQualificationRule',
+    'WorkerAuthorization',
+    'WorkerRoster',
 ]

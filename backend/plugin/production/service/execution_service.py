@@ -116,6 +116,16 @@ class ProductionExecutionService:
         )
         if active:
             raise errors.ConflictError(msg='OPERATION_EXECUTION_ALREADY_IN_PROGRESS')
+        # Import lazily because scheduling owns workforce qualifications and already
+        # depends on production for shop-floor dispatch execution.
+        from backend.plugin.scheduling.service.workforce_service import workforce_service
+
+        await workforce_service.enforce_access(
+            db,
+            ProductionExecutionService._operator_id(),
+            operation.operation_id,
+            operation.work_center_id,
+        )
         now = timezone.now()
         execution = ProductionExecution(
             execution_no=(obj.execution_no or f'EXE-{now:%Y%m%d%H%M%S}-{uuid4().hex[:6]}').upper(),
@@ -231,6 +241,14 @@ class ProductionExecutionService:
         order = await db.scalar(select(WorkOrder).where(WorkOrder.id == execution.work_order_id, WorkOrder.deleted == 0))
         if not operation or not order:
             raise errors.ConflictError(msg='PRODUCTION_EXECUTION_SNAPSHOT_MISSING')
+        from backend.plugin.scheduling.service.workforce_service import workforce_service
+
+        await workforce_service.enforce_access(
+            db,
+            ProductionExecutionService._operator_id(),
+            operation.operation_id,
+            operation.work_center_id,
+        )
         if operation.completed_quantity + obj.good_quantity > order.planned_quantity:
             raise errors.ConflictError(msg='OPERATION_COMPLETION_EXCEEDS_PLANNED_QUANTITY')
         now = timezone.now()

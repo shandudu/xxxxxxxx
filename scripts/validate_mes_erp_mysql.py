@@ -64,6 +64,13 @@ REQUIRED_COLUMNS = {
     'mes_mold_maintenance_order': {'mold_id', 'maintenance_type', 'status', 'total_cost'},
     'mes_mold_cavity_quality_record': {'mold_id', 'cavity_id', 'result'},
     'mes_mold_cost_ledger': {'mold_id', 'cost_type', 'amount'},
+    'mes_job_type': {'job_code', 'job_name', 'status'},
+    'mes_skill_level': {'level_code', 'rank_order', 'status'},
+    'mes_worker_skill': {'user_id', 'job_type_id', 'skill_level_id', 'expires_on'},
+    'mes_worker_certificate': {'user_id', 'certificate_type', 'certificate_no', 'expires_on'},
+    'mes_position_qualification_rule': {'job_type_id', 'minimum_skill_level_id', 'operation_id', 'work_center_id'},
+    'mes_worker_authorization': {'user_id', 'job_type_id', 'work_center_id', 'effective_to'},
+    'mes_worker_roster': {'user_id', 'work_date', 'shift_id', 'work_center_id'},
 }
 TABLE_PATTERN = re.compile(r"__tablename__\s*=\s*['\"]([^'\"]+)['\"]")
 ENV_PATTERN = re.compile(r"^([A-Z0-9_]+)\s*=\s*['\"]?([^'\"\r\n]*)['\"]?\s*$")

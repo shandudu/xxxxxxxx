@@ -367,6 +367,21 @@ class ProductionService:
             return existing
         if order.status != WorkOrderStatus.IN_PROGRESS:
             raise errors.ConflictError(msg='WORK_ORDER_NOT_IN_PROGRESS')
+        final_operation = await db.scalar(
+            select(WorkOrderOperation)
+            .where(WorkOrderOperation.work_order_id == order.id, WorkOrderOperation.deleted == 0)
+            .order_by(WorkOrderOperation.sequence_no.desc())
+            .limit(1)
+        )
+        if final_operation:
+            from backend.plugin.scheduling.service.workforce_service import workforce_service
+
+            await workforce_service.enforce_access(
+                db,
+                ProductionService._operator_id(),
+                final_operation.operation_id,
+                final_operation.work_center_id,
+            )
         if order.completed_quantity + obj.good_quantity > order.planned_quantity:
             raise errors.ConflictError(msg='COMPLETION_EXCEEDS_PLANNED_QUANTITY')
         number = requested_number or f'RPT-{timezone.now():%Y%m%d%H%M%S}-{uuid4().hex[:6]}'.upper()
