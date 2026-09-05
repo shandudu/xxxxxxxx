@@ -82,18 +82,18 @@ class CRUDDictData(CRUDPlus[DictData]):
 
         return await self.select_order('sort', 'asc', **filters)
 
-    async def get_by_label_and_type_code(self, db: AsyncSession, label: str, type_code: str) -> DictData | None:
+    async def get_by_value_and_type_code(self, db: AsyncSession, value: str, type_code: str) -> DictData | None:
         """
         通过标签获取字典数据
 
         :param db: 数据库会话
-        :param label: 字典标签
+        :param value: 稳定字典 Key
         :param type_code: 字典类型编码
         :return:
         """
         return await self.select_model_by_column(
             db,
-            and_(self.model.label == label, self.model.type_code == type_code),
+            and_(self.model.value == value, self.model.type_code == type_code),
             deleted=0,
         )
 

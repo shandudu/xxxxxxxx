@@ -81,6 +81,21 @@ export function getDictOptions(
   return dataList;
 }
 
+/**
+ * Resolve a configurable short label or long Tips message by dictionary type
+ * and stable key. The fallback is returned until the async dictionary request
+ * finishes, and reactive callers update when data or locale changes.
+ */
+export function getDictText(
+  dictName: string,
+  value: string,
+  fallback = value,
+  params: Record<string, unknown> = {},
+) {
+  getDictOptions(dictName, { asString: true });
+  return useDictStore().getLocalizedText(dictName, value, fallback, params);
+}
+
 // 预加载所有字典
 export function preloadDictOptions() {
   Object.keys(DICT_CONFIG).forEach((dictName) => {

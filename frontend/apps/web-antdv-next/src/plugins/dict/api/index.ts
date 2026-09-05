@@ -36,7 +36,9 @@ export interface DictDataParams {
 export interface DictDataResult {
   id: number;
   type_id: number;
-  label: string;
+  label?: string;
+  label_zh_cn?: string;
+  label_en_us?: string;
   value: string;
   color?: string;
   sort: number;
@@ -46,7 +48,9 @@ export interface DictDataResult {
 
 export interface CreateDictDataParams {
   type_id: number;
-  label: string;
+  label?: string;
+  label_zh_cn?: string;
+  label_en_us?: string;
   value: string;
   sort: number;
   status: number;

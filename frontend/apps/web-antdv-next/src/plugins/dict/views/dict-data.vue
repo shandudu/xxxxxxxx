@@ -91,7 +91,7 @@ function onActionClick({ code, row }: OnActionClickParams<DictDataResult>) {
     case 'delete': {
       deleteDictDataApi([row.id]).then(() => {
         message.success({
-          content: $t('ui.actionMessage.deleteSuccess', [row.label]),
+          content: $t('ui.actionMessage.deleteSuccess', [row.label_zh_cn || row.label || row.value]),
           key: 'action_process_msg',
         });
         onRefresh();

@@ -93,7 +93,7 @@ export const queryDictDataSchema: VbenFormSchema[] = [
   {
     component: 'Input',
     fieldName: 'label',
-    label: '数据标签',
+    label: '中文值',
   },
 ];
 
@@ -107,14 +107,15 @@ export function useDictDataColumns(
       type: 'seq',
       width: 50,
     },
-    { field: 'label', title: '标签' },
-    { field: 'value', title: '值' },
+    { field: 'value', title: '字典 Key' },
+    { field: 'label_zh_cn', title: '中文值' },
+    { field: 'label_en_us', title: '英文值' },
     {
       field: 'color',
       title: '标签样式',
       slots: {
         default: ({ row }: { row: any }) => {
-          return h(Tag, { color: row.color }, { default: () => row.label });
+          return h(Tag, { color: row.color }, { default: () => row.label_zh_cn || row.label || row.value });
         },
       },
     },
@@ -179,15 +180,20 @@ export const dictDataSchema: VbenFormSchema[] = [
     rules: 'required',
   },
   {
-    component: 'Input',
-    fieldName: 'label',
-    label: '数据标签',
+    component: 'Textarea',
+    fieldName: 'label_zh_cn',
+    label: '中文值',
     rules: 'required',
+  },
+  {
+    component: 'Textarea',
+    fieldName: 'label_en_us',
+    label: '英文值',
   },
   {
     component: 'Input',
     fieldName: 'value',
-    label: '数据值',
+    label: '字典 Key',
     rules: 'required',
   },
   {

@@ -10,14 +10,16 @@ class DictData(Base):
 
     __tablename__ = 'sys_dict_data'
     __table_args__ = (
-        sa.UniqueConstraint('type_code', 'label', 'deleted', name='uk_sys_dict_data_type_code_label_deleted'),
+        sa.UniqueConstraint('type_code', 'value', 'deleted', name='uk_sys_dict_data_type_code_value_deleted'),
         {'comment': '字典数据表'},
     )
 
     id: Mapped[id_key] = mapped_column(init=False)
     type_code: Mapped[str] = mapped_column(sa.String(32), comment='对应的字典类型编码')
-    label: Mapped[str] = mapped_column(sa.String(32), comment='字典标签')
-    value: Mapped[str] = mapped_column(sa.String(32), comment='字典值')
+    label: Mapped[str] = mapped_column(UniversalText, comment='兼容字典标签')
+    value: Mapped[str] = mapped_column(sa.String(128), comment='稳定字典键值')
+    label_zh_cn: Mapped[str | None] = mapped_column(UniversalText, default=None, comment='简体中文值')
+    label_en_us: Mapped[str | None] = mapped_column(UniversalText, default=None, comment='英文值')
     color: Mapped[str | None] = mapped_column(sa.String(32), default=None, comment='标签颜色')
     sort: Mapped[int] = mapped_column(default=0, comment='排序')
     status: Mapped[int] = mapped_column(default=1, comment='状态（0停用 1正常）')
