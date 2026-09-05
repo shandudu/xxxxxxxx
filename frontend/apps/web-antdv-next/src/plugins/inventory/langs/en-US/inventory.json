@@ -30,5 +30,26 @@
   "saved": "Stock movement created",
   "posted": "Stock movement posted",
   "adjusted": "Stock adjustment posted",
-  "confirmPost": "Post this movement? Posting creates immutable stock ledger entries."
+  "confirmPost": "Post this movement? Posting creates immutable stock ledger entries.",
+  "replenishmentTips": {
+    "generated": "Generated {count} replenishment suggestions",
+    "firmed": "Replenishment suggestion firmed",
+    "noSupplier": "No supplier is available",
+    "released": "Replenishment suggestion released to a business document"
+  },
+  "shelfLifeTips": {
+    "materialRequired": "Enter a material ID",
+    "policySaved": "Shelf-life and FEFO policy saved",
+    "risksRefreshed": "Refreshed {count} at-risk lots; expired lots were frozen by policy",
+    "alertAcknowledged": "Alert acknowledged",
+    "reinspectionCreated": "Reinspection created; record the result in Quality Inspection",
+    "releaseFieldsRequired": "Enter the new expiry date and release justification",
+    "lotReleased": "Lot released after reinspection and expiry date updated",
+    "lotScrapped": "Lot inventory scrapped",
+    "allocationFieldsRequired": "Enter material, warehouse, and required quantity",
+    "recallFieldsRequired": "Enter the root lot and recall reason",
+    "recallCreated": "Recall created, related inventory quarantined, and affected shipments identified",
+    "impactClosed": "Impact item closed",
+    "recallClosed": "Recall closed"
+  }
 }

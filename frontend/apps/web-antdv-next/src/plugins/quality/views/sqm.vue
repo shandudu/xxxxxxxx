@@ -2,6 +2,7 @@
 import { onMounted, reactive, ref } from 'vue';
 import { Page } from '@vben/common-ui';
 import { message } from 'antdv-next';
+import { getConfigurableTip } from '#/utils/dict';
 
 import type { SupplierOption } from '../../purchasing/api';
 import type {
@@ -26,6 +27,8 @@ import {
 } from '../api';
 
 const loading = ref(false);
+const tip = (key: string, params: Record<string, unknown> = {}) =>
+  getConfigurableTip(`quality.sqm.${key}`, `quality.sqmTips.${key}`, params);
 const dashboard = ref<SupplierQualityDashboard>();
 const scars = ref<SupplierCorrectiveAction[]>([]);
 const policies = ref<SupplierQualityPolicy[]>([]);
@@ -77,7 +80,7 @@ function supplierName(id: number) {
 
 async function issue(row: SupplierCorrectiveAction) {
   await issueSupplierScarApi(row.id);
-  message.success('SCAR 已发布，整改时限默认为 14 天');
+  message.success(tip('scarIssued'));
   await load();
 }
 
@@ -96,43 +99,43 @@ function openResponse(row: SupplierCorrectiveAction) {
 async function submitResponse() {
   if (!selectedScar.value) return;
   if (!responseForm.containment_action || !responseForm.root_cause || !responseForm.corrective_action || !responseForm.preventive_action) {
-    return message.warning('请完整填写遏制、根因、纠正和预防措施');
+    return message.warning(tip('responseFieldsRequired'));
   }
   await respondSupplierScarApi(selectedScar.value.id, responseForm);
   responseOpen.value = false;
-  message.success('供应商整改回复已提交');
+  message.success(tip('responseSubmitted'));
   await load();
 }
 
 async function reinspect(row: SupplierCorrectiveAction) {
   const result = await reinspectSupplierScarApi(row.id);
-  message.success(`复验单已创建：${result.reinspection_id}，请在质量检验页完成后再验证`);
+  message.success(tip('reinspectionCreated', { id: result.reinspection_id }));
   await load();
 }
 
 async function verify(row: SupplierCorrectiveAction) {
   await verifySupplierScarApi(row.id, { verification_notes: '整改复验结果已确认' });
-  message.success('SCAR 验证完成，供应商评分已自动重算');
+  message.success(tip('scarVerified'));
   await load();
 }
 
 async function recalculate() {
-  if (!selectedSupplierId.value) return message.warning('请选择供应商');
+  if (!selectedSupplierId.value) return message.warning(tip('supplierRequired'));
   const result = await recalculateSupplierQualityApi(selectedSupplierId.value);
-  message.success(`评分完成：${result.grade} 级 / ${result.procurement_decision}`);
+  message.success(tip('scoreCompleted', { grade: result.grade, decision: result.procurement_decision }));
   await load();
 }
 
 async function recalculateAll() {
   const rows = await recalculateAllSupplierQualityApi();
-  message.success(`已重算 ${rows.length} 家供应商`);
+  message.success(tip('scoresRebuilt', { count: rows.length }));
   await load();
 }
 
 async function savePolicy() {
-  if (!policyForm.supplier_id) return message.warning('请选择供应商');
+  if (!policyForm.supplier_id) return message.warning(tip('supplierRequired'));
   await upsertSupplierQualityPolicyApi(policyForm.supplier_id, policyForm);
-  message.success('供应商评分与采购策略已保存');
+  message.success(tip('policySaved'));
   await load();
 }
 

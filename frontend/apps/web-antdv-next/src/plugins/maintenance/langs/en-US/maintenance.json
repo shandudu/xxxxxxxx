@@ -1,3 +1,20 @@
 {
-  "menu": "Equipment Maintenance"
+  "menu": "Equipment Maintenance",
+  "tips": {
+    "requiredFields": "Complete all required fields",
+    "planSaved": "Maintenance plan saved",
+    "tasksGenerated": "Generated {count} maintenance tasks",
+    "taskCompleted": "Maintenance task completed",
+    "repairCreated": "Repair order created",
+    "repairAssigned": "Repair technician assigned",
+    "repairCompleted": "Repair completed and related downtime closed",
+    "partIssued": "Spare part issued and inventory deducted",
+    "costPosted": "Repair cost posted and general-ledger voucher generated",
+    "downtimeCreated": "Downtime record created",
+    "downtimeClosed": "Downtime record closed",
+    "taskStartedWithDowntime": "Task started and planned downtime created automatically",
+    "taskStarted": "Task started",
+    "repairStarted": "Repair started",
+    "repairCancelled": "Repair order cancelled"
+  }
 }

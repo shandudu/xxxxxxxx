@@ -2,6 +2,7 @@
 import { onMounted, reactive, ref } from 'vue';
 import { Page } from '@vben/common-ui';
 import { message, Modal } from 'antdv-next';
+import { getConfigurableTip } from '#/utils/dict';
 
 import type {
   ExpiryAlert,
@@ -30,6 +31,8 @@ import {
 } from '../api';
 
 const loading = ref(false);
+const tip = (key: string, params: Record<string, unknown> = {}) =>
+  getConfigurableTip(`inventory.shelf_life.${key}`, `inventory.shelfLifeTips.${key}`, params);
 const dashboard = ref<ShelfLifeDashboard>();
 const policies = ref<ShelfLifePolicy[]>([]);
 const alerts = ref<ExpiryAlert[]>([]);
@@ -77,27 +80,27 @@ async function load() {
 }
 
 async function savePolicy() {
-  if (!policyForm.material_id) return message.warning('请输入物料 ID');
+  if (!policyForm.material_id) return message.warning(tip('materialRequired'));
   await upsertShelfLifePolicyApi(policyForm.material_id, policyForm);
-  message.success('效期与 FEFO 策略已保存');
+  message.success(tip('policySaved'));
   await load();
 }
 
 async function syncAlerts() {
   const rows = await syncExpiryAlertsApi();
-  message.success(`已刷新 ${rows.length} 个风险批次，过期批次已按策略冻结`);
+  message.success(tip('risksRefreshed', { count: rows.length }));
   await load();
 }
 
 async function acknowledge(row: ExpiryAlert) {
   await acknowledgeExpiryAlertApi(row.id);
-  message.success('预警已确认');
+  message.success(tip('alertAcknowledged'));
   await load();
 }
 
 async function reinspect(row: LotQualityHold) {
   await createExpiryReinspectionApi(row.id);
-  message.success('复检单已创建，请在质量检验模块录入结果');
+  message.success(tip('reinspectionCreated'));
   await load();
 }
 
@@ -110,14 +113,14 @@ function openRelease(row: LotQualityHold) {
 
 async function releaseHold() {
   if (!selectedHold.value || !releaseForm.new_expiry_date || !releaseForm.decision_reason) {
-    return message.warning('请填写新效期和放行依据');
+    return message.warning(tip('releaseFieldsRequired'));
   }
   await releaseLotHoldApi(selectedHold.value.id, {
     new_expiry_date: new Date(releaseForm.new_expiry_date).toISOString(),
     decision_reason: releaseForm.decision_reason,
   });
   releaseOpen.value = false;
-  message.success('批次已复检放行并更新效期');
+  message.success(tip('lotReleased'));
   await load();
 }
 
@@ -128,7 +131,7 @@ function scrap(row: LotQualityHold) {
     okType: 'danger',
     async onOk() {
       await scrapLotHoldApi(row.id, { decision_reason: '效期复检不通过，批准报废' });
-      message.success('批次库存已报废');
+      message.success(tip('lotScrapped'));
       await load();
     },
   });
@@ -136,16 +139,16 @@ function scrap(row: LotQualityHold) {
 
 async function previewFefo() {
   if (!fefoForm.material_id || !fefoForm.warehouse_id || fefoForm.quantity <= 0) {
-    return message.warning('请输入物料、仓库和需求数量');
+    return message.warning(tip('allocationFieldsRequired'));
   }
   candidates.value = await getFefoCandidatesApi(fefoForm);
 }
 
 async function createRecall() {
-  if (!recallForm.root_lot_id || !recallForm.reason) return message.warning('请输入根批次和召回原因');
+  if (!recallForm.root_lot_id || !recallForm.reason) return message.warning(tip('recallFieldsRequired'));
   await createLotRecallApi(recallForm);
   recallForm.reason = '';
-  message.success('召回单已创建，相关库存已隔离，受影响发货已展开');
+  message.success(tip('recallCreated'));
   await load();
 }
 
@@ -154,13 +157,13 @@ async function resolveItem(recall: LotRecall, itemId: number) {
     status: 'CLOSED',
     action_notes: '召回处置已完成',
   });
-  message.success('影响项已关闭');
+  message.success(tip('impactClosed'));
   await load();
 }
 
 async function closeRecall(row: LotRecall) {
   await closeLotRecallApi(row.id);
-  message.success('召回闭环已完成');
+  message.success(tip('recallClosed'));
   await load();
 }
 

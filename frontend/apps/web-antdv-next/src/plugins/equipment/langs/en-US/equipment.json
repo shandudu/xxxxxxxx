@@ -83,6 +83,17 @@
     "OTHER": "Other"
   },
   "filter": { "yes": "Yes", "no": "No" },
+  "moldTips": {
+    "fieldsRequired": "Complete the mold, tooling equipment, and product fields",
+    "created": "Mold record and cavities created",
+    "mountFieldsRequired": "Select a mold and production equipment",
+    "mounted": "Mold mounted",
+    "unmounted": "Mold unmounted",
+    "taskCreated": "Task created",
+    "taskStarted": "Task started",
+    "maintenanceCompleted": "Maintenance completed and costs collected",
+    "cavityUpdated": "Cavity status updated"
+  },
   "message": {
     "requiredBasic": "Equipment code and name are required",
     "requiredCategory": "Select an active equipment category",

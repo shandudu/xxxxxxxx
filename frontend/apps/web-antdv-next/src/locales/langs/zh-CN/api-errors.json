@@ -1,0 +1,9 @@
+{
+  "apiErrors": {
+    "request_failed": "请求失败",
+    "validation_failed": "提交的数据校验失败",
+    "permission_denied": "没有执行该操作的权限",
+    "resource_not_found": "请求的业务数据不存在",
+    "conflict": "业务数据已发生冲突，请刷新后重试"
+  }
+}

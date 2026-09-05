@@ -2,6 +2,7 @@
 import { onMounted, reactive, ref } from 'vue';
 import { Page } from '@vben/common-ui';
 import { message } from 'antdv-next';
+import { getConfigurableTip } from '#/utils/dict';
 
 import type { MaterialOption } from '../../material/api';
 import type { SupplierOption } from '../../purchasing/api';
@@ -41,6 +42,8 @@ import {
 } from '../api';
 
 const loading = ref(false);
+const tip = (key: string, params: Record<string, unknown> = {}) =>
+  getConfigurableTip(`supplier.lifecycle.${key}`, `supplier.lifecycleTips.${key}`, params);
 const dashboard = ref<SupplierLifecycleDashboard>();
 const applications = ref<QualificationApplication[]>([]);
 const audits = ref<SupplierAudit[]>([]);
@@ -103,43 +106,43 @@ async function load() {
 
 async function createApplication() {
   if (!applicationForm.supplier_id || !applicationForm.requested_scope || !applicationForm.certificate_reference) {
-    return message.warning('请选择供应商并填写准入范围和资质文件引用');
+    return message.warning(tip('applicationFieldsRequired'));
   }
   await createQualificationApplicationApi({
     supplier_id: applicationForm.supplier_id,
     requested_scope: applicationForm.requested_scope,
     certificate_manifest: { reference: applicationForm.certificate_reference },
   });
-  message.success('准入申请已创建，供应商采购资格暂时冻结');
+  message.success(tip('applicationCreated'));
   Object.assign(applicationForm, { supplier_id: undefined, requested_scope: '', certificate_reference: '' });
   await load();
 }
 
 async function submitApplication(row: QualificationApplication) {
   await submitQualificationApplicationApi(row.id);
-  message.success('准入申请已提交');
+  message.success(tip('applicationSubmitted'));
   await load();
 }
 
 async function approveApplication(row: QualificationApplication) {
   await approveQualificationApplicationApi(row.id, { decision_notes: '审厂、样品和 PPAP 均符合准入要求', valid_days: 365, qualification_level: 'STANDARD' });
-  message.success('准入已批准，物料级 AVL 已生成');
+  message.success(tip('applicationApproved'));
   await load();
 }
 
 async function rejectApplication(row: QualificationApplication) {
   await rejectQualificationApplicationApi(row.id, { decision_notes: '当前准入证据不满足要求' });
-  message.success('准入申请已拒绝');
+  message.success(tip('applicationRejected'));
   await load();
 }
 
 async function createAudit() {
-  if (!auditForm.application_id) return message.warning('请选择准入申请');
+  if (!auditForm.application_id) return message.warning(tip('applicationRequired'));
   await createQualificationAuditApi(auditForm.application_id, {
     audit_type: auditForm.audit_type,
     planned_at: new Date().toISOString(),
   });
-  message.success('审厂任务已创建');
+  message.success(tip('auditCreated'));
   await load();
 }
 
@@ -150,30 +153,30 @@ async function completeAudit(row: SupplierAudit, passed = true) {
     findings: auditForm.findings,
     evidence_manifest: { source: 'SQE audit workbench' },
   });
-  message.success('审厂结论已记录');
+  message.success(tip('auditRecorded'));
   await load();
 }
 
 async function createSample() {
-  if (!sampleForm.application_id || !sampleForm.material_id) return message.warning('请选择准入申请和物料');
+  if (!sampleForm.application_id || !sampleForm.material_id) return message.warning(tip('sampleFieldsRequired'));
   await createSampleApprovalApi(sampleForm.application_id, {
     material_id: sampleForm.material_id,
     submitted_quantity: sampleForm.submitted_quantity,
     evidence_manifest: { source: 'sample submission' },
   });
-  message.success('送样轮次已创建');
+  message.success(tip('sampleCreated'));
   await load();
 }
 
 async function decideSample(row: SupplierSampleApproval, approved: boolean) {
   await decideSampleApprovalApi(row.id, { approved, decision_notes: approved ? '样品验证符合要求' : '样品验证不合格' });
-  message.success('样品结论已记录');
+  message.success(tip('sampleRecorded'));
   await load();
 }
 
 async function createPpap() {
   if (!ppapForm.application_id || !ppapForm.material_id || !ppapForm.sample_approval_id || !ppapForm.document_reference) {
-    return message.warning('请完整选择申请、物料、已批准样品并填写 PPAP 文件引用');
+    return message.warning(tip('ppapFieldsRequired'));
   }
   await createSupplierPpapApi(ppapForm.application_id, {
     material_id: ppapForm.material_id,
@@ -182,37 +185,37 @@ async function createPpap() {
     version: ppapForm.version,
     document_manifest: { reference: ppapForm.document_reference, apqp: true },
   });
-  message.success('PPAP 文件包已创建');
+  message.success(tip('ppapCreated'));
   await load();
 }
 
 async function submitPpap(row: SupplierPpap) {
   await submitSupplierPpapApi(row.id);
-  message.success('PPAP 已提交审批');
+  message.success(tip('ppapSubmitted'));
   await load();
 }
 
 async function decidePpap(row: SupplierPpap, approved: boolean) {
   await decideSupplierPpapApi(row.id, { approved, decision_notes: approved ? 'PPAP 文件与样品证据符合要求' : 'PPAP 文件需补充', valid_days: 365 });
-  message.success('PPAP 审批结论已记录');
+  message.success(tip('ppapRecorded'));
   await load();
 }
 
 async function createReview(row: SupplierAvlEntry) {
   await createSupplierPeriodicReviewApi(row.id);
-  message.success('定期复审任务已创建');
+  message.success(tip('reviewCreated'));
   await load();
 }
 
 async function generateDueReviews() {
   const rows = await generateDueSupplierReviewsApi();
-  message.success(`已生成 ${rows.length} 个到期复审任务`);
+  message.success(tip('reviewsGenerated', { count: rows.length }));
   await load();
 }
 
 async function completeReview(row: SupplierPeriodicReview, decision: string) {
   await completeSupplierPeriodicReviewApi(row.id, { decision, notes: `复审决定：${decision}`, next_review_days: 365 });
-  message.success('复审结论已联动 AVL 和采购资格');
+  message.success(tip('reviewCompleted'));
   await load();
 }
 

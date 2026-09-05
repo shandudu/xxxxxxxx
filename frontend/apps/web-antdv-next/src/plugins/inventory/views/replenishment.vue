@@ -13,11 +13,14 @@ import {
   getReplenishmentSuggestionsApi,
   releaseReplenishmentApi,
 } from '../api';
+import { getConfigurableTip } from '#/utils/dict';
 
 const loading = ref(false);
 const dashboard = ref<ReplenishmentDashboard>();
 const suggestions = ref<ReplenishmentSuggestion[]>([]);
 const suppliers = ref<SupplierOption[]>([]);
+const tip = (key: string, params: Record<string, unknown> = {}) =>
+  getConfigurableTip(`inventory.replenishment.${key}`, `inventory.replenishmentTips.${key}`, params);
 
 async function load() {
   loading.value = true;
@@ -34,25 +37,25 @@ async function load() {
 
 async function generate() {
   const rows = await generateReplenishmentApi();
-  message.success('已生成 ' + rows.length + ' 条补货建议');
+  message.success(tip('generated', { count: rows.length }));
   await load();
 }
 
 async function firm(row: ReplenishmentSuggestion) {
   await firmReplenishmentApi(row.id);
-  message.success('补货建议已固定');
+  message.success(tip('firmed'));
   await load();
 }
 
 async function release(row: ReplenishmentSuggestion) {
   if (row.order_type === 'PURCHASE' && !suppliers.value[0]) {
-    message.warning('没有可用供应商');
+    message.warning(tip('noSupplier'));
     return;
   }
   await releaseReplenishmentApi(row.id, {
     supplier_id: row.order_type === 'PURCHASE' ? suppliers.value[0]?.id : undefined,
   });
-  message.success('补货建议已转正式业务单据');
+  message.success(tip('released'));
   await load();
 }
 

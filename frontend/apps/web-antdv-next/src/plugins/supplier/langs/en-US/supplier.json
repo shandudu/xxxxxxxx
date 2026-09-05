@@ -1,3 +1,23 @@
 {
-  "menu": "Supplier master data"
+  "menu": "Supplier master data",
+  "lifecycleTips": {
+    "applicationFieldsRequired": "Select a supplier and enter the approval scope and qualification reference",
+    "applicationCreated": "Approval application created; supplier purchasing eligibility is temporarily frozen",
+    "applicationSubmitted": "Approval application submitted",
+    "applicationApproved": "Approval granted and material-level AVL entries generated",
+    "applicationRejected": "Approval application rejected",
+    "applicationRequired": "Select an approval application",
+    "auditCreated": "Supplier audit task created",
+    "auditRecorded": "Supplier audit conclusion recorded",
+    "sampleFieldsRequired": "Select an approval application and material",
+    "sampleCreated": "Sample submission round created",
+    "sampleRecorded": "Sample conclusion recorded",
+    "ppapFieldsRequired": "Select the application, material, approved sample, and enter the PPAP file reference",
+    "ppapCreated": "PPAP package created",
+    "ppapSubmitted": "PPAP submitted for approval",
+    "ppapRecorded": "PPAP approval decision recorded",
+    "reviewCreated": "Periodic review task created",
+    "reviewsGenerated": "Generated {count} due review tasks",
+    "reviewCompleted": "Review decision applied to AVL and purchasing eligibility"
+  }
 }

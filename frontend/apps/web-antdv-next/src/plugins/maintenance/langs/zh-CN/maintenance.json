@@ -1,3 +1,20 @@
 {
-  "menu": "设备运维"
+  "menu": "设备运维",
+  "tips": {
+    "requiredFields": "请填写所有必填项",
+    "planSaved": "运维计划已保存",
+    "tasksGenerated": "已生成 {count} 条运维任务",
+    "taskCompleted": "运维任务已完成",
+    "repairCreated": "维修工单已创建",
+    "repairAssigned": "维修人员已指派",
+    "repairCompleted": "维修已完成，关联停机已关闭",
+    "partIssued": "备件已领用并扣减库存",
+    "costPosted": "维修费用已入账并生成总账凭证",
+    "downtimeCreated": "停机记录已创建",
+    "downtimeClosed": "停机记录已关闭",
+    "taskStartedWithDowntime": "任务已开始，计划停机已自动创建",
+    "taskStarted": "任务已开始",
+    "repairStarted": "维修已开始",
+    "repairCancelled": "维修工单已取消"
+  }
 }

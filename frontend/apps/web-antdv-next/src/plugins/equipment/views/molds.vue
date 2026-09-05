@@ -2,6 +2,7 @@
 import { onMounted, reactive, ref } from 'vue';
 import { Page } from '@vben/common-ui';
 import { message } from 'antdv-next';
+import { getConfigurableTip } from '#/utils/dict';
 
 import type { MaterialOption } from '../../material/api';
 import type { WorkOrder } from '../../production/api';
@@ -15,6 +16,8 @@ import {
 } from '../api';
 
 const loading = ref(false);
+const tip = (key: string) =>
+  getConfigurableTip(`equipment.mold.${key}`, `equipment.moldTips.${key}`);
 const dashboard = ref<MoldDashboard>();
 const molds = ref<MoldItem[]>([]);
 const cavities = ref<MoldCavity[]>([]);
@@ -47,17 +50,17 @@ async function load() {
 }
 
 async function createMold() {
-  if (!form.mold_code || !form.mold_name || !form.tool_equipment_id || !form.product_material_id) return message.warning('请完整填写模具、工装设备和产品');
-  await createMoldApi(form); message.success('模具台账及穴位已创建');
+  if (!form.mold_code || !form.mold_name || !form.tool_equipment_id || !form.product_material_id) return message.warning(tip('fieldsRequired'));
+  await createMoldApi(form); message.success(tip('created'));
   Object.assign(form, { mold_code: '', mold_name: '', tool_equipment_id: undefined, product_material_id: undefined }); await load();
 }
 async function selectMold(id: number) { selectedMoldId.value = id; cavities.value = await getMoldCavitiesApi(id); }
-async function mount() { if (!mountForm.mold_id || !mountForm.equipment_id) return message.warning('请选择模具和生产设备'); await mountMoldApi(mountForm.mold_id, mountForm); message.success('上模完成'); await load(); }
-async function unmount(row: MoldItem) { await unmountMoldApi(row.id, { remark: '生产结束下模' }); message.success('下模完成'); await load(); }
-async function createMaintenance(row: MoldItem, type = 'PREVENTIVE') { await createMoldMaintenanceApi(row.id, { maintenance_type: type, trigger_type: 'MANUAL', description: type === 'PREVENTIVE' ? '计划预防保养' : '模具故障维修' }); message.success('任务已创建'); await load(); }
-async function startMaintenance(row: MoldMaintenance) { await startMoldMaintenanceApi(row.id); message.success('任务已开始'); await load(); }
-async function completeMaintenance(row: MoldMaintenance) { await completeMoldMaintenanceApi(row.id, { findings: '模具状态检查完成', action_taken: '清洁、润滑并更换磨损件', labor_cost: 100, material_cost: 50, external_cost: 0 }); message.success('完工并归集成本'); await load(); }
-async function cavityDecision(row: MoldCavity, failed: boolean) { if (failed) await recordMoldQualityApi(row.mold_id, { cavity_id: row.id, inspected_quantity: 10, defect_quantity: 1, result: 'FAIL', defect_code: 'DIMENSION', notes: '穴位尺寸异常' }); else await updateMoldCavityApi(row.id, { status: 'ACTIVE', remark: '维修验证合格，恢复穴位' }); message.success('穴位状态已更新'); await load(); }
+async function mount() { if (!mountForm.mold_id || !mountForm.equipment_id) return message.warning(tip('mountFieldsRequired')); await mountMoldApi(mountForm.mold_id, mountForm); message.success(tip('mounted')); await load(); }
+async function unmount(row: MoldItem) { await unmountMoldApi(row.id, { remark: '生产结束下模' }); message.success(tip('unmounted')); await load(); }
+async function createMaintenance(row: MoldItem, type = 'PREVENTIVE') { await createMoldMaintenanceApi(row.id, { maintenance_type: type, trigger_type: 'MANUAL', description: type === 'PREVENTIVE' ? '计划预防保养' : '模具故障维修' }); message.success(tip('taskCreated')); await load(); }
+async function startMaintenance(row: MoldMaintenance) { await startMoldMaintenanceApi(row.id); message.success(tip('taskStarted')); await load(); }
+async function completeMaintenance(row: MoldMaintenance) { await completeMoldMaintenanceApi(row.id, { findings: '模具状态检查完成', action_taken: '清洁、润滑并更换磨损件', labor_cost: 100, material_cost: 50, external_cost: 0 }); message.success(tip('maintenanceCompleted')); await load(); }
+async function cavityDecision(row: MoldCavity, failed: boolean) { if (failed) await recordMoldQualityApi(row.mold_id, { cavity_id: row.id, inspected_quantity: 10, defect_quantity: 1, result: 'FAIL', defect_code: 'DIMENSION', notes: '穴位尺寸异常' }); else await updateMoldCavityApi(row.id, { status: 'ACTIVE', remark: '维修验证合格，恢复穴位' }); message.success(tip('cavityUpdated')); await load(); }
 
 onMounted(load);
 </script>

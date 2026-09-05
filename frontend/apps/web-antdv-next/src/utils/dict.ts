@@ -3,7 +3,10 @@ import type { DictDataResult } from '#/plugins/dict/api';
 import { getDictDataDetailApi } from '#/plugins/dict/api';
 import { useDictStore } from '#/store';
 
+import { $t } from '@vben/locales';
+
 export enum DictEnum {
+  API_ERRORS = 'api_errors',
   NOTICE = 'notice',
   SYS_CHOOSE = 'sys_choose',
   SYS_DATA_RULE_EXPRESSION = 'sys_data_rule_expression',
@@ -15,10 +18,12 @@ export enum DictEnum {
   SYS_STATUS = 'sys_status',
   TASK_PERIOD_TYPE = 'task_period_type',
   TASK_STRATEGY_TYPE = 'task_strategy_type',
+  UI_TIPS = 'ui_tips',
   USER_ONLINE_STATUS = 'user_online_status',
 }
 
 export const DICT_CONFIG: Record<string, DictOptionsParams> = {
+  [DictEnum.API_ERRORS]: { asString: true },
   [DictEnum.SYS_STATUS]: { asNumber: true },
   [DictEnum.NOTICE]: { asNumber: true },
   [DictEnum.SYS_CHOOSE]: { asBoolean: true },
@@ -31,6 +36,7 @@ export const DICT_CONFIG: Record<string, DictOptionsParams> = {
   [DictEnum.TASK_PERIOD_TYPE]: { asString: true },
   [DictEnum.TASK_STRATEGY_TYPE]: { asNumber: true },
   [DictEnum.USER_ONLINE_STATUS]: { asNumber: true },
+  [DictEnum.UI_TIPS]: { asString: true },
 };
 
 export interface DictOptionsParams {
@@ -70,9 +76,10 @@ export function getDictOptions(
         return [] as DictDataResult[];
       })
       .finally(() => {
-        if (dataList.length > 0) {
-          dictRequestCache.delete(cacheKey);
-        }
+        // Keep only in-flight requests in this map. A failed or empty request
+        // must be retryable after login, reconnect, or an administrator adds
+        // the first dictionary entry.
+        dictRequestCache.delete(cacheKey);
       });
 
     dictRequestCache.set(cacheKey, requestPromise);
@@ -94,6 +101,32 @@ export function getDictText(
 ) {
   getDictOptions(dictName, { asString: true });
   return useDictStore().getLocalizedText(dictName, value, fallback, params);
+}
+
+/**
+ * Resolve an interactive UI message from the configurable `ui_tips`
+ * dictionary. `messageKey` is the stable business key stored in the normal
+ * dictionary screen; `localeKey` supplies the built-in bilingual fallback so
+ * the UI remains usable before the dictionary request completes.
+ */
+export function getConfigurableTip(
+  messageKey: string,
+  localeKey: string,
+  params: Record<string, unknown> = {},
+) {
+  return getDictText('ui_tips', messageKey, $t(localeKey, params), params);
+}
+
+/** Translate stable backend error keys while preserving legacy plain text. */
+export function getLocalizedServerError(
+  errorKeyOrMessage: string,
+  params: Record<string, unknown> = {},
+) {
+  if (!errorKeyOrMessage) return '';
+  const localeKey = `apiErrors.${errorKeyOrMessage}`;
+  const translated = $t(localeKey, params);
+  const fallback = translated === localeKey ? errorKeyOrMessage : translated;
+  return getDictText('api_errors', errorKeyOrMessage, fallback, params);
 }
 
 // 预加载所有字典

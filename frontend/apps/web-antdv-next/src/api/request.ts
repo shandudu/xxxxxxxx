@@ -16,6 +16,7 @@ import { useAccessStore } from '@vben/stores';
 import { message } from 'antdv-next';
 
 import { useAuthStore } from '#/store';
+import { getLocalizedServerError } from '#/utils/dict';
 
 import { refreshTokenApi } from './core';
 
@@ -102,7 +103,7 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
       const errorMessage =
         responseData?.error ?? responseData?.msg ?? error?.msg ?? '';
       // 如果没有错误信息，则会根据状态码进行提示
-      message.error(errorMessage || msg);
+      message.error(getLocalizedServerError(errorMessage || msg));
     }),
   );
 
@@ -133,7 +134,7 @@ function createMiniRequestClient(
       const responseData = error?.response?.data ?? {};
       const errorMessage =
         responseData?.error ?? responseData?.msg ?? error?.msg ?? '';
-      message.error(errorMessage || msg);
+      message.error(getLocalizedServerError(errorMessage || msg));
     }),
   );
 

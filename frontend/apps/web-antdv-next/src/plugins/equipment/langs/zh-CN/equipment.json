@@ -83,6 +83,17 @@
     "OTHER": "其他"
   },
   "filter": { "yes": "是", "no": "否" },
+  "moldTips": {
+    "fieldsRequired": "请完整填写模具、工装设备和产品",
+    "created": "模具台账及穴位已创建",
+    "mountFieldsRequired": "请选择模具和生产设备",
+    "mounted": "上模完成",
+    "unmounted": "下模完成",
+    "taskCreated": "任务已创建",
+    "taskStarted": "任务已开始",
+    "maintenanceCompleted": "完工并归集成本",
+    "cavityUpdated": "穴位状态已更新"
+  },
   "message": {
     "requiredBasic": "设备编码和名称不能为空",
     "requiredCategory": "请选择启用的设备分类",

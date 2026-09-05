@@ -30,5 +30,26 @@
   "saved": "库存调拨单已创建",
   "posted": "库存调拨已过账",
   "adjusted": "库存调整已过账",
-  "confirmPost": "确认过账该调拨单？过账后会生成不可修改的库存流水。"
+  "confirmPost": "确认过账该调拨单？过账后会生成不可修改的库存流水。",
+  "replenishmentTips": {
+    "generated": "已生成 {count} 条补货建议",
+    "firmed": "补货建议已固定",
+    "noSupplier": "没有可用供应商",
+    "released": "补货建议已转正式业务单据"
+  },
+  "shelfLifeTips": {
+    "materialRequired": "请输入物料 ID",
+    "policySaved": "效期与 FEFO 策略已保存",
+    "risksRefreshed": "已刷新 {count} 个风险批次，过期批次已按策略冻结",
+    "alertAcknowledged": "预警已确认",
+    "reinspectionCreated": "复检单已创建，请在质量检验模块录入结果",
+    "releaseFieldsRequired": "请填写新效期和放行依据",
+    "lotReleased": "批次已复检放行并更新效期",
+    "lotScrapped": "批次库存已报废",
+    "allocationFieldsRequired": "请输入物料、仓库和需求数量",
+    "recallFieldsRequired": "请输入根批次和召回原因",
+    "recallCreated": "召回单已创建，相关库存已隔离，受影响发货已展开",
+    "impactClosed": "影响项已关闭",
+    "recallClosed": "召回闭环已完成"
+  }
 }

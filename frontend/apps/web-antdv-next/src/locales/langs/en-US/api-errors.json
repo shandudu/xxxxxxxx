@@ -1,0 +1,9 @@
+{
+  "apiErrors": {
+    "request_failed": "Request failed",
+    "validation_failed": "The submitted data is invalid",
+    "permission_denied": "You do not have permission to perform this action",
+    "resource_not_found": "The requested business record was not found",
+    "conflict": "The business record has changed. Refresh and try again"
+  }
+}

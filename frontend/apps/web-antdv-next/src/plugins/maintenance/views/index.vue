@@ -16,6 +16,8 @@ import { Page } from '@vben/common-ui';
 import { message } from 'antdv-next';
 import dayjs from 'dayjs';
 
+import { getConfigurableTip } from '#/utils/dict';
+
 import {
   assignRepairOrderApi,
   cancelRepairOrderApi,
@@ -89,6 +91,9 @@ const repairStatusFilter = ref<string>();
 const downtimeStatusFilter = ref<string>();
 const downtimeHourlyCost = ref(0);
 const costAnalysis = ref<RepairCostAnalysisSummary>({ hourly_downtime_cost: 0, repair_count: 0, downtime_minutes: 0, downtime_cost: 0, total_parts_cost: 0, total_labor_cost: 0, total_repair_cost: 0, rows: [] });
+
+const tip = (key: string, params: Record<string, unknown> = {}) =>
+  getConfigurableTip(`maintenance.${key}`, `maintenance.tips.${key}`, params);
 
 const filteredTasks = computed(() =>
   taskStatusFilter.value
@@ -312,7 +317,7 @@ function openCloseDowntime(record: EquipmentDowntime) {
 
 function requireFields(fields: string[]) {
   const missing = fields.some((field) => form.value[field] === undefined || form.value[field] === null || form.value[field] === '');
-  if (missing) message.warning('请填写所有必填项');
+  if (missing) message.warning(tip('requiredFields'));
   return !missing;
 }
 
@@ -333,39 +338,39 @@ async function submit() {
     if (dialogKind.value === 'plan') {
       if (editingPlan.value) await updateMaintenancePlanApi(editingPlan.value.id, form.value);
       else await createMaintenancePlanApi(form.value);
-      message.success('运维计划已保存');
+      message.success(tip('planSaved'));
     } else if (dialogKind.value === 'generate') {
       const generated = await generateDueTasksApi(form.value);
-      message.success(`已生成 ${generated.length} 条运维任务`);
+      message.success(tip('tasksGenerated', { count: generated.length }));
       activeTab.value = 'tasks';
     } else if (dialogKind.value === 'completeTask' && selectedTask.value) {
       await completeMaintenanceTaskApi(selectedTask.value.id, form.value);
-      message.success('运维任务已完成');
+      message.success(tip('taskCompleted'));
     } else if (dialogKind.value === 'repair') {
       await createRepairOrderApi(form.value);
-      message.success('维修工单已创建');
+      message.success(tip('repairCreated'));
       activeTab.value = 'repairs';
     } else if (dialogKind.value === 'assignRepair' && selectedRepair.value) {
       await assignRepairOrderApi(selectedRepair.value.id, form.value);
-      message.success('维修人员已指派');
+      message.success(tip('repairAssigned'));
     } else if (dialogKind.value === 'completeRepair' && selectedRepair.value) {
       await completeRepairOrderApi(selectedRepair.value.id, form.value);
-      message.success('维修已完成，关联停机已关闭');
+      message.success(tip('repairCompleted'));
     } else if (dialogKind.value === 'issuePart' && selectedRepair.value) {
       await issueRepairPartApi(selectedRepair.value.id, form.value);
-      message.success('备件已领用并扣减库存');
+      message.success(tip('partIssued'));
     } else if (dialogKind.value === 'postCost' && selectedRepair.value) {
       await postRepairCostApi(selectedRepair.value.id, form.value);
-      message.success('维修费用已入账并生成总账凭证');
+      message.success(tip('costPosted'));
     } else if (dialogKind.value === 'downtime') {
       const data = { ...form.value };
       if (!data.end_at) delete data.end_at;
       await createEquipmentDowntimeApi(data);
-      message.success('停机记录已创建');
+      message.success(tip('downtimeCreated'));
       activeTab.value = 'downtimes';
     } else if (dialogKind.value === 'closeDowntime' && selectedDowntime.value) {
       await closeEquipmentDowntimeApi(selectedDowntime.value.id, form.value);
-      message.success('停机记录已关闭');
+      message.success(tip('downtimeClosed'));
     }
     dialogVisible.value = false;
     await loadAll();
@@ -376,19 +381,19 @@ async function submit() {
 
 async function startTask(record: MaintenanceTask) {
   await startMaintenanceTaskApi(record.id);
-  message.success(record.requires_shutdown ? '任务已开始，计划停机已自动创建' : '任务已开始');
+  message.success(tip(record.requires_shutdown ? 'taskStartedWithDowntime' : 'taskStarted'));
   await loadAll();
 }
 
 async function startRepair(record: RepairOrder) {
   await startRepairOrderApi(record.id);
-  message.success('维修已开始');
+  message.success(tip('repairStarted'));
   await loadAll();
 }
 
 async function cancelRepair(record: RepairOrder) {
   await cancelRepairOrderApi(record.id);
-  message.success('维修工单已取消');
+  message.success(tip('repairCancelled'));
   await loadAll();
 }
 
