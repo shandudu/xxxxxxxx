@@ -1,0 +1,11 @@
+{
+  "menu": "扫码包装",
+  "title": "完工品扫码包装工作台",
+  "subtitle": "包装规格 → 包装任务 → Lot/SN 扫码装箱 → 称重封箱 → 检验放行 → 成品入库",
+  "tab": { "workbench": "包装工作台", "task": "包装任务", "spec": "包装规格" },
+  "action": { "refresh": "刷新", "createSpec": "新增规格", "createTask": "新增任务", "release": "下达", "start": "开工", "select": "进入工作台", "createHu": "新建包装箱", "scan": "扫码装箱", "weight": "记录称重", "seal": "封箱", "inspectPass": "检验放行", "inspectFail": "检验不合格", "print": "打印标签", "stock": "放行入库" },
+  "field": { "specCode": "规格编码", "specName": "规格名称", "materialId": "物品 ID", "unitsPerCarton": "每箱数量", "version": "版本", "weightRequired": "启用称重校验", "targetWeight": "目标毛重", "tolerance": "重量公差", "labelTemplate": "标签模板", "reportId": "报工单 ID", "specification": "包装规格", "plannedQuantity": "计划数量", "taskNo": "任务号", "status": "状态", "packedQuantity": "已包装/计划", "lotId": "批次 ID", "huCode": "包装箱码", "capacity": "容量", "quantity": "箱内数量", "scanCode": "Lot/SN 条码", "scanQuantity": "扫描数量", "grossWeight": "毛重", "tareWeight": "皮重", "weightResult": "称重结果", "content": "箱内明细" },
+  "placeholder": { "scan": "扫描或输入 Lot/SN 后回车", "selectTask": "请先在包装任务中选择任务" },
+  "dashboard": { "draft": "草稿任务", "active": "执行中任务", "packed": "待放行任务", "released": "已入库任务", "openHu": "开放包装箱", "heldHu": "质量隔离箱" },
+  "tips": { "specCreated": "包装规格已创建", "taskCreated": "包装任务已创建", "taskReleased": "包装任务已下达", "huCreated": "包装箱码已创建", "scanAccepted": "扫码装箱成功", "weightRecorded": "称重结果已记录", "huSealed": "封箱完成", "inspectionCompleted": "包装检验已完成", "labelRecorded": "标签打印记录已保存", "releasedToStock": "包装成品已放行入库", "required": "请填写必填字段" }
+}

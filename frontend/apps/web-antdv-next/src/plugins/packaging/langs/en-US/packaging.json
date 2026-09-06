@@ -1,0 +1,11 @@
+{
+  "menu": "Scan Packaging",
+  "title": "Finished Goods Scan Packaging",
+  "subtitle": "Specification → task → Lot/SN scan → weight and seal → inspection → stock release",
+  "tab": { "workbench": "Packaging Workbench", "task": "Packaging Tasks", "spec": "Specifications" },
+  "action": { "refresh": "Refresh", "createSpec": "New Specification", "createTask": "New Task", "release": "Release", "start": "Start", "select": "Open Workbench", "createHu": "Create HU", "scan": "Pack Scan", "weight": "Record Weight", "seal": "Seal", "inspectPass": "Pass Inspection", "inspectFail": "Fail Inspection", "print": "Print Label", "stock": "Release to Stock" },
+  "field": { "specCode": "Specification Code", "specName": "Specification Name", "materialId": "Material ID", "unitsPerCarton": "Units per Carton", "version": "Version", "weightRequired": "Require Weight Check", "targetWeight": "Target Gross Weight", "tolerance": "Weight Tolerance", "labelTemplate": "Label Template", "reportId": "Production Report ID", "specification": "Packaging Specification", "plannedQuantity": "Planned Quantity", "taskNo": "Task No.", "status": "Status", "packedQuantity": "Packed / Planned", "lotId": "Lot ID", "huCode": "HU Code", "capacity": "Capacity", "quantity": "HU Quantity", "scanCode": "Lot/SN Barcode", "scanQuantity": "Scan Quantity", "grossWeight": "Gross Weight", "tareWeight": "Tare Weight", "weightResult": "Weight Result", "content": "Contents" },
+  "placeholder": { "scan": "Scan or enter a Lot/SN and press Enter", "selectTask": "Select a packaging task first" },
+  "dashboard": { "draft": "Draft Tasks", "active": "Active Tasks", "packed": "Awaiting Release", "released": "Stock Released", "openHu": "Open HUs", "heldHu": "Quality-Hold HUs" },
+  "tips": { "specCreated": "Packaging specification created", "taskCreated": "Packaging task created", "taskReleased": "Packaging task released", "huCreated": "Packaging handling unit created", "scanAccepted": "Item scan accepted", "weightRecorded": "Weight result recorded", "huSealed": "Handling unit sealed", "inspectionCompleted": "Packaging inspection completed", "labelRecorded": "Label print record saved", "releasedToStock": "Packaged goods released to stock", "required": "Complete the required fields" }
+}

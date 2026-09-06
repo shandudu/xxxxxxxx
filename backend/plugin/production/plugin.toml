@@ -13,3 +13,7 @@ extend = "admin"
 [api.production]
 prefix = "/production"
 tags = "MES production"
+
+[api.packaging]
+prefix = "/packaging"
+tags = "MES finished-goods packaging"
