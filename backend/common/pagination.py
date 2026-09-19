@@ -150,6 +150,13 @@ class CursorPageData(_CursorPageDetails, Generic[SchemaT]):
     items: Sequence[SchemaT]
 
 
+def _page_data_with_raw_items(page: AbstractPage[Any]) -> dict[str, Any]:
+    """Serialize metadata while preserving ORM/dataclass row objects."""
+    page_data = page.model_dump(exclude={'items'})
+    page_data['items'] = list(page.items)
+    return page_data
+
+
 async def paging_data(db: AsyncSession, select: Select, **kwargs) -> dict[str, Any]:
     """
     基于 SQLAlchemy 创建分页数据
@@ -160,8 +167,7 @@ async def paging_data(db: AsyncSession, select: Select, **kwargs) -> dict[str, A
     :return:
     """
     paginated_data: _CustomPage = await apaginate(db, select, **kwargs)
-    page_data = paginated_data.model_dump()
-    return page_data
+    return _page_data_with_raw_items(paginated_data)
 
 
 async def cursor_paging_data(db: AsyncSession, select: Select, **kwargs) -> dict[str, Any]:
@@ -174,8 +180,7 @@ async def cursor_paging_data(db: AsyncSession, select: Select, **kwargs) -> dict
     :return:
     """
     paginated_data: _CustomCursorPage = await apaginate(db, select, **kwargs)
-    page_data = paginated_data.model_dump()
-    return page_data
+    return _page_data_with_raw_items(paginated_data)
 
 
 # 分页依赖注入
